@@ -4,6 +4,7 @@ import { App } from './app/App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import './styles/tokens.css';
 import './styles/global.css';
+import './styles/pages.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Elemento raiz não encontrado.');

@@ -1,13 +1,13 @@
 # Roadmap oficial
 
-Fonte normativa: [Projeto mestre](PROJETO_MESTRE.md). Todas as fases além da 01 estão **não iniciadas**. Concluir código da fundação não equivale a validar sua execução nativa; acompanhar evidências em [Fase 01](FASE_01_FUNDACAO.md).
+Fonte normativa: [Projeto mestre](PROJETO_MESTRE.md). Fases 01 e 02 implementadas e validadas tecnicamente; fases 03–09 **não iniciadas**. Evidências em [Fase 01](FASE_01_FUNDACAO.md) e [Fase 02](FASE_02_IDENTIDADE_INTERFACE.md).
 
 Validação complementar: [Fase 01.5 — Windows](FASE_01_5_VALIDACAO_WINDOWS.md). Em 13/10/2026, os pré-requisitos foram instalados com autorização e os testes, builds, janela nativa, navegação, IPC, SQLite e persistência após reabertura foram comprovados. A Fase 01.5 é uma etapa de aceite da fundação, sem alterar o roadmap de nove fases.
 
 | Fase | Objetivo | Escopo | Dependências | Conclusão verificável | Estado atual |
 | --- | --- | --- | --- | --- | --- |
 | 01 — Fundação e documentação | Base local testável | Mestre, arquitetura, React/Tauri, navegação, SQLite mínimo, testes, Git | Node 24; Rust MSVC; C++ Build Tools/SDK; WebView2 | Documentação consistente, janela inicia, navegação e IPC funcionam, banco inicializa e persiste, verificações registradas | Concluída tecnicamente; validada no Windows na Fase 01.5 |
-| 02 — Identidade visual e interface | Consolidar experiência GMAD | Tokens definitivos, componentes, estados e acessibilidade | Aceite 01 e referências de identidade | Interface aprovada e consistente em resoluções suportadas | Não iniciada |
+| 02 — Identidade visual e interface | Consolidar experiência GMAD | Tokens definitivos, componentes, estados e acessibilidade | Aceite 01 e referências de identidade | Interface aprovada e consistente em resoluções suportadas | Implementada e validada tecnicamente no Windows; evidências disponíveis para apreciação visual do usuário |
 | 03 — Biblioteca editorial | Gerir conteúdo local real | Publicações manuais, mídias, busca/listagem, edição e migrações editoriais | 02 | Conteúdo criado/editado persiste; integridade e arquivos validados | Não iniciada |
 | 04 — Integração Trello | Receber conteúdo da matriz | Credenciais seguras, quadro por URL, cartões, anexos, importação incremental | 03 e autorização Trello | Reimportação sem duplicação ou perda de edições; falhas recuperáveis | Não iniciada |
 | 05 — Revisão e aprovação | Selecionar conteúdo da loja | Aprovar, ignorar, editar, validar prontidão, histórico por versão | 03 e 04 | Transições e reversões explícitas testadas; nenhuma aprovação de conteúdo desatualizado | Não iniciada |
@@ -20,4 +20,4 @@ Validação complementar: [Fase 01.5 — Windows](FASE_01_5_VALIDACAO_WINDOWS.md
 
 Registrar escopo realizado, verificações realmente executadas e pendências. Nenhuma fase seguinte inicia automaticamente. Nesta Fase 01, build/testes Rust e janela Tauri com SQLite/IPC reais foram verificados, além dos testes SQL auxiliares. Os limites específicos da inspeção estão registrados no relatório da Fase 01.5.
 
-A Fase 02 está planejada e liberada tecnicamente pela validação da fundação; seu início depende de solicitação do usuário. Nenhuma funcionalidade da Fase 02 foi implementada.
+A Fase 02 foi solicitada e implementada em 13/10/2026: design system, oito áreas, navegação nativa e preservação de IPC/SQLite. Testes e builds aprovados; critérios e limites em seu relatório. A Fase 03 está liberada tecnicamente para solicitação do usuário e não foi iniciada. A apreciação estética final do usuário não deve ser confundida com uma aprovação já fornecida.

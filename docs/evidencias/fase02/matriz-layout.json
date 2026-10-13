@@ -1,0 +1,290 @@
+[
+  {
+    "size": "1366x768",
+    "page": "Dashboard",
+    "client": 1351,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1351,
+    "width": 1366
+  },
+  {
+    "size": "1366x768",
+    "page": "Biblioteca editorial",
+    "client": 1366,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1366,
+    "width": 1366
+  },
+  {
+    "size": "1366x768",
+    "page": "Importações Trello",
+    "client": 1366,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1366,
+    "width": 1366
+  },
+  {
+    "size": "1366x768",
+    "page": "Revisão de publicações",
+    "client": 1366,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1366,
+    "width": 1366
+  },
+  {
+    "size": "1366x768",
+    "page": "Calendário mensal",
+    "client": 1366,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1366,
+    "width": 1366
+  },
+  {
+    "size": "1366x768",
+    "page": "Nova publicação",
+    "client": 1366,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1366,
+    "width": 1366
+  },
+  {
+    "size": "1366x768",
+    "page": "Histórico",
+    "client": 1366,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1366,
+    "width": 1366
+  },
+  {
+    "size": "1366x768",
+    "page": "Configurações",
+    "client": 1366,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1366,
+    "width": 1366
+  },
+  {
+    "size": "1600x900",
+    "page": "Dashboard",
+    "client": 1585,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1585,
+    "width": 1600
+  },
+  {
+    "size": "1600x900",
+    "page": "Biblioteca editorial",
+    "client": 1600,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1600,
+    "width": 1600
+  },
+  {
+    "size": "1600x900",
+    "page": "Importações Trello",
+    "client": 1600,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1600,
+    "width": 1600
+  },
+  {
+    "size": "1600x900",
+    "page": "Revisão de publicações",
+    "client": 1600,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1600,
+    "width": 1600
+  },
+  {
+    "size": "1600x900",
+    "page": "Calendário mensal",
+    "client": 1585,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1585,
+    "width": 1600
+  },
+  {
+    "size": "1600x900",
+    "page": "Nova publicação",
+    "client": 1600,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1600,
+    "width": 1600
+  },
+  {
+    "size": "1600x900",
+    "page": "Histórico",
+    "client": 1600,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1600,
+    "width": 1600
+  },
+  {
+    "size": "1600x900",
+    "page": "Configurações",
+    "client": 1600,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1600,
+    "width": 1600
+  },
+  {
+    "size": "1920x1080",
+    "page": "Dashboard",
+    "client": 1920,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1920,
+    "width": 1920
+  },
+  {
+    "size": "1920x1080",
+    "page": "Biblioteca editorial",
+    "client": 1920,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1920,
+    "width": 1920
+  },
+  {
+    "size": "1920x1080",
+    "page": "Importações Trello",
+    "client": 1920,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1920,
+    "width": 1920
+  },
+  {
+    "size": "1920x1080",
+    "page": "Revisão de publicações",
+    "client": 1920,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1920,
+    "width": 1920
+  },
+  {
+    "size": "1920x1080",
+    "page": "Calendário mensal",
+    "client": 1920,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1920,
+    "width": 1920
+  },
+  {
+    "size": "1920x1080",
+    "page": "Nova publicação",
+    "client": 1920,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1920,
+    "width": 1920
+  },
+  {
+    "size": "1920x1080",
+    "page": "Histórico",
+    "client": 1920,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1920,
+    "width": 1920
+  },
+  {
+    "size": "1920x1080",
+    "page": "Configurações",
+    "client": 1920,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1920,
+    "width": 1920
+  },
+  {
+    "size": "1024x768",
+    "page": "Dashboard",
+    "client": 1009,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1009,
+    "width": 1024
+  },
+  {
+    "size": "1024x768",
+    "page": "Biblioteca editorial",
+    "client": 1024,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "size": "1024x768",
+    "page": "Importações Trello",
+    "client": 1024,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "size": "1024x768",
+    "page": "Revisão de publicações",
+    "client": 1024,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "size": "1024x768",
+    "page": "Calendário mensal",
+    "client": 1024,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "size": "1024x768",
+    "page": "Nova publicação",
+    "client": 1024,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "size": "1024x768",
+    "page": "Histórico",
+    "client": 1024,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "size": "1024x768",
+    "page": "Configurações",
+    "client": 1024,
+    "font": "Inter, \"Segoe UI\", sans-serif",
+    "interLoaded": true,
+    "scroll": 1024,
+    "width": 1024
+  }
+]

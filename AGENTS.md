@@ -10,5 +10,6 @@
 8. Atualizar a documentação ao concluir cada fase e registrar o resultado real.
 9. Não modificar contratos estabelecidos sem necessidade justificada e documentada; nunca reescrever migrações aplicadas.
 10. Nunca executar publicação real sem autorização explícita.
+11. Seguir `docs/DESIGN_SYSTEM.md`: tokens semânticos, Inter local licenciada, componentes existentes, foco visível e layouts compactos. Não introduzir dados ou contagens simuladas na interface operacional.
 
 SQLite e integrações são exclusivos do Rust. Segredos externos pertencem ao armazenamento seguro do sistema operacional. Não habilitar SQL, shell ou acesso arbitrário ao filesystem pelo frontend. Dados, mídias, tokens e builds não entram no Git. Não fazer push automático.

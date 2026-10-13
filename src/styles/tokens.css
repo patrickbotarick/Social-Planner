@@ -1,19 +1,26 @@
+@font-face { font-family: Inter; src: url('/fonts/InterVariable.woff2') format('woff2'); font-weight: 100 900; font-style: normal; font-display: swap; }
 :root {
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  color: #263b32;
-  background: #f5f6f3;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  --green-950: #123c2e;
-  --green-900: #173e32;
-  --green-700: #285842;
-  --green-soft: #e9f0e9;
-  --orange: #ec9b59;
-  --ink: #263b32;
-  --muted: #64716a;
-  --border: #dfe5dd;
-  --surface: #fff;
-  --background: #f5f6f3;
-  --radius: 14px;
+  font-family: Inter, 'Segoe UI', sans-serif;
+  font-synthesis: none; font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  color: var(--color-text-primary); background: var(--color-background);
+  --color-background: #f5f6f3; --color-surface: #fff; --color-surface-muted: #f0f3ef;
+  --color-text-primary: #262d2a; --color-text-secondary: #68736d;
+  --color-border: #dfe5df; --color-border-strong: #b9c5bd;
+  --color-border-control: #85938b; --color-surface-subtle: #fafbf9;
+  --color-icon-muted: #7c8b80; --color-text-navigation: #535f58; --color-surface-active: #e4ebe4;
+  --color-brand: #163d32; --color-primary: #267a55;
+  --color-primary-hover: #1f6546; --color-primary-active: #184f37;
+  --color-accent: #f29a38; --color-focus: #9e5315;
+  --color-success: #216647; --color-success-surface: #eaf3ec;
+  --color-warning: #87501a; --color-warning-surface: #fff3e1;
+  --color-danger: #a33332; --color-danger-surface: #fbeeed;
+  --color-disabled: #6b756f; --color-disabled-surface: #eef1ed;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --font-xs: .6875rem; --font-sm: .75rem; --font-md: .8125rem;
+  --font-lg: .875rem; --font-section: 1rem; --font-title: 1.5rem;
+  --weight-normal: 400; --weight-medium: 500; --weight-semibold: 600; --weight-bold: 700;
+  --line-body: 1.55; --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px;
+  --control-height: 36px; --sidebar-width: 216px;
 }

@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/app/App';
@@ -21,6 +21,11 @@ const status: FoundationStatus = {
 
 beforeEach(() => { vi.mocked(desktopAvailable).mockReturnValue(false); });
 
+async function openStorage(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('link', { name: 'Configurações' }));
+  await user.click(await screen.findByRole('tab', { name: 'Armazenamento' }));
+}
+
 describe('Fundação editorial', () => {
   it('identifica a prévia web sem inventar conexão com SQLite', async () => {
     render(<App />);
@@ -37,8 +42,10 @@ describe('Fundação editorial', () => {
       expect(await screen.findByRole('heading', { level: 1, name: section.label })).toBeVisible();
       expect(screen.getByRole('link', { name: section.label })).toHaveAttribute('aria-current', 'page');
       if (section.id !== 'configuracoes') {
-        expect(screen.getByRole('button', { name: 'Disponível em uma próxima fase' })).toBeDisabled();
-        expect(screen.getByText(`Previsto para a Fase ${section.phase}`)).toBeVisible();
+        const content = within(screen.getByRole('main'));
+        const actions = [...content.queryAllByRole('button'), ...content.queryAllByRole('searchbox'), ...content.queryAllByRole('textbox'), ...content.queryAllByRole('combobox')];
+        expect(actions.some((action) => action.hasAttribute('disabled'))).toBe(true);
+        if (section.id !== 'calendario') actions.forEach((action) => { expect(action).toBeDisabled(); });
       }
     }
   });
@@ -56,7 +63,9 @@ describe('Fundação editorial', () => {
     vi.mocked(getFoundationStatus).mockResolvedValue(status);
     const user = userEvent.setup();
     render(<App />);
-    expect(await screen.findByText('Banco conectado. Verificação de integridade concluída.')).toBeVisible();
+    expect(await screen.findByText('Armazenamento conectado')).toBeVisible();
+    await openStorage(user);
+    expect(screen.getByText('Banco conectado. Verificação de integridade concluída.')).toBeVisible();
     expect(screen.getByText(status.databasePath)).toBeVisible();
     expect(screen.getByText('America/Sao_Paulo')).toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Verificar novamente' }));
@@ -70,14 +79,16 @@ describe('Fundação editorial', () => {
     render(<App />);
     expect(await screen.findByRole('alert')).toHaveTextContent('A verificação do banco falhou');
     expect(screen.queryByText('detalhe sensível')).not.toBeInTheDocument();
+    await openStorage(user);
     await user.click(screen.getByRole('button', { name: 'Verificar novamente' }));
     expect(await screen.findByText('Banco conectado. Verificação de integridade concluída.')).toBeVisible();
   });
 
-  it('mantém a verificação desabilitada enquanto o comando está pendente', () => {
+  it('mantém a verificação desabilitada enquanto o comando está pendente', async () => {
     vi.mocked(desktopAvailable).mockReturnValue(true);
     vi.mocked(getFoundationStatus).mockImplementation(() => new Promise(() => {}));
     render(<App />);
+    await openStorage(userEvent.setup());
     expect(screen.getByRole('button', { name: 'Verificar novamente' })).toBeDisabled();
     expect(screen.getByRole('status')).toHaveTextContent('Verificando a conexão');
   });

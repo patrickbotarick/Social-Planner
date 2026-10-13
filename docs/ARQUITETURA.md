@@ -13,7 +13,7 @@ flowchart LR
   Repo --> Migration[Migrações SQL versionadas]
 ```
 
-`src/app` define navegação por hash e composição. `layouts` contém a moldura da janela. `pages` contém Dashboard, Configurações e a página de funcionalidades futuras. `components` reúne elementos reutilizáveis e a barreira de erro. `hooks` coordena carregamento e descarte de respostas obsoletas. `services` é a fronteira IPC. `types` define os DTOs; `styles` define tokens globais e o layout usa CSS Modules.
+`src/app` define navegação por hash e composição. `layouts` contém AppShell (reaproveitado em AppLayout.tsx), Sidebar e Topbar. `pages` contém oito layouts distintos: Dashboard, Biblioteca, Importações, Revisão, Calendário, Nova publicação, Histórico e Configurações. `components/ui` reúne primitivas próprias, sem biblioteca completa de UI; `components` mantém diagnóstico, cabeçalho e barreira de erro. `hooks` coordena carregamento e descarte de respostas obsoletas. `services` é a fronteira IPC. `types` define os DTOs; `styles` define tokens, primitivas e composições; o shell usa CSS Modules. `utils/calendar.ts` calcula somente a grade visual e o dia no fuso IANA, sem persistência/agendamento.
 
 Não há roteador externo: oito páginas estáticas são atendidas por links de hash, com suporte a histórico e atualização direta. Rotas desconhecidas exibem Dashboard. Ao navegar, o conteúdo principal recebe foco e o título do documento muda. Isso não impede adotar roteador na fase que exigir parâmetros, rotas aninhadas ou formulários complexos.
 
@@ -56,6 +56,8 @@ Credenciais e integração serão responsabilidade do Rust nas fases próprias. 
 
 `npm run dev` verifica Cargo, inicia Vite com porta `0` (livre, escolhida pelo sistema), obtém a URL real e inicia a CLI Tauri com override de `build.devUrl`. O servidor é fechado ao sair da CLI. Não há porta fixa obrigatória ou regra de firewall necessária. O servidor só escuta em `127.0.0.1`.
 
+Para QA, `npm.cmd run dev -- --window-size 1366x768` aplica dimensões transitórias de conteúdo à janela principal, preservando os demais atributos da configuração. Aceita 640×520 a 2560×1440. Não modifica tauri.conf.json, identificador, CSP ou contratos IPC.
+
 `npm run dev:web` é uma prévia da UI: não cria nem acessa banco. O aviso explícito evita confundir navegação web com integração desktop validada. Em produção os ativos do Vite são incorporados ao executável Tauri; nenhum servidor web remoto é exigido.
 
 Build nativo e testes Rust exigem Rust MSVC, ferramentas C++ e Windows SDK; WebView2 é necessário para abrir a janela. A distribuição/instalador pertence à Fase 09; `build:desktop` prepara o executável sem bundle.
@@ -68,4 +70,4 @@ Backup futuro: snapshot consistente usando API de backup SQLite, manifesto de ve
 
 ## Estrutura deliberadamente enxuta
 
-`features/` e `utils/` serão criados quando houver domínio ou utilidades reais. Não existem pastas vazias para sugerir funcionalidades prontas. O símbolo em `public/brand.svg` e os ícones Tauri são provisórios, não representam identidade GMAD aprovada. Instalação e critérios de validação estão no README e no relatório da fase.
+`features/` será criado quando houver domínio real. `utils/` contém apenas a utilidade visual do calendário. Não existem pastas vazias para sugerir funcionalidades prontas. Símbolo e ícones Windows seguem a identidade proposta para o software na Fase 02, sem representar códigos oficiais de marca. Inter licenciada é incorporada localmente. Diretrizes em DESIGN_SYSTEM.md; instalação e critérios de validação no README e nos relatórios das fases.

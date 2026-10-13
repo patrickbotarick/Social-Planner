@@ -6,7 +6,7 @@ Fonte oficial de escopo e contratos. Criado em 13/10/2026. Alterações relevant
 
 Aplicativo Windows desktop para um único operador da GMAD Rio Preto organizar o conteúdo editorial recebido mensalmente da matriz pelo Trello. Resolve a dispersão de textos e mídias e permite selecionar campanhas aplicáveis à loja antes de planejar publicações no Instagram.
 
-O produto completo permitirá importar, revisar, editar, criar, aprovar, planejar e acompanhar publicações. A Fase 01 entrega somente documentação, estrutura técnica, navegação, diagnóstico local e persistência mínima. A identidade visual é provisória.
+O produto completo permitirá importar, revisar, editar, criar, aprovar, planejar e acompanhar publicações. A Fase 01 entrega documentação, estrutura técnica, navegação, diagnóstico local e persistência mínima, validada no Windows. A Fase 02 consolida a identidade editorial do software, componentes acessíveis e layouts das oito áreas, sem implementar operações editoriais das fases seguintes.
 
 ### Restrições permanentes
 
@@ -80,7 +80,7 @@ Fluxo assistido registra intenção local e ação humana; abrir Business Suite 
 
 Dashboard mostra situação real da fundação e do banco, sem métricas editoriais inexistentes. Menu: Dashboard, Biblioteca editorial, Importações Trello, Revisão de publicações, Calendário mensal, Nova publicação, Histórico e Configurações. Todas as áreas têm navegação funcional; áreas futuras informam fase prevista e ações desabilitadas. Configurações mostra preferências reais em modo leitura nesta fase.
 
-Verde escuro, branco, cinza e destaque laranja são provisórios. Layout adaptável, foco visível, links semânticos, títulos e estados acessíveis. Nenhum dado demonstrativo deve se passar por dado real.
+Verde profundo, branco, cinza e detalhe laranja formam a identidade do software consolidada na Fase 02, documentada em DESIGN_SYSTEM.md, sem afirmar códigos oficiais da marca. Inter local licenciada, layout adaptável, foco visível, links semânticos, títulos e estados acessíveis. Nenhum dado demonstrativo deve se passar por dado real.
 
 ## 7. Integrações futuras
 
@@ -95,7 +95,7 @@ Prova técnica futura deve registrar versões, fontes oficiais, formatos suporta
 | Fase | Objetivo e escopo | Dependências | Critérios de conclusão | Estado |
 | --- | --- | --- | --- | --- |
 | 01 — Fundação e documentação | Documentos, shell desktop, navegação e SQLite mínimo | Node, Rust MSVC, C++ Build Tools, WebView2 | Documentos consistentes, inicialização desktop/banco e navegação verificadas; validações e limitações registradas | Concluída tecnicamente e validada no Windows; evidências em FASE_01_5_VALIDACAO_WINDOWS.md |
-| 02 — Identidade visual e interface | Identidade definitiva e componentes acessíveis | 01 aceita, referências visuais | Interface consistente, responsiva e aprovada | Não iniciada |
+| 02 — Identidade visual e interface | Identidade definitiva e componentes acessíveis | 01 aceita, referências visuais | Interface consistente, responsiva e aprovada | Implementada e validada tecnicamente no Windows; evidências em FASE_02_IDENTIDADE_INTERFACE.md; apreciação visual final disponível ao usuário |
 | 03 — Biblioteca editorial | Persistência editorial, mídias e criação manual | 02; migrações das entidades necessárias | Criar/editar/consultar conteúdo real sem perda de dados | Não iniciada |
 | 04 — Integração Trello | Autorização, cartões, anexos e importação incremental | 03; acesso oficial ao Trello | Importação repetível sem duplicação; falhas e limites tratados | Não iniciada |
 | 05 — Revisão e aprovação | Decisões, histórico e validação de prontidão | 03 e 04 | Transições válidas e rastreáveis por versão | Não iniciada |
@@ -126,5 +126,7 @@ Não iniciar outra fase sem solicitação. Detalhes de aceite e acompanhamento e
 - [Roadmap](ROADMAP.md): entregas e critérios por fase.
 - [Fase 01](FASE_01_FUNDACAO.md): evidências, limitações e aceite.
 - [Fase 01.5](FASE_01_5_VALIDACAO_WINDOWS.md): instalação autorizada e validação nativa Windows.
+- [Design system](DESIGN_SYSTEM.md): identidade do software, componentes, acessibilidade e responsividade.
+- [Fase 02](FASE_02_IDENTIDADE_INTERFACE.md): implementação, testes e evidências visuais nativas.
 
 Em conflito, este documento define o escopo; divergências de implementação devem ser corrigidas ou justificadas antes de ampliar contratos.

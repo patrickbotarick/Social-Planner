@@ -2,7 +2,7 @@
 
 Aplicativo Windows local-first para organizar o conteúdo editorial de Instagram da GMAD Rio Preto, recebido mensalmente do Trello da matriz.
 
-**Estado:** Fase 01 implementada e validada nativamente neste Windows na Fase 01.5. Janela Tauri, navegação, IPC, SQLite e persistência após reabertura comprovados; testes e build desktop aprovados. Biblioteca, Trello, revisão, calendário e Meta ainda não estão implementados. Nenhuma publicação real é executada. Evidências e limites em [docs/FASE_01_5_VALIDACAO_WINDOWS.md](docs/FASE_01_5_VALIDACAO_WINDOWS.md).
+**Estado:** Fases 01 e 02 implementadas e validadas tecnicamente neste Windows. Identidade editorial, Inter local, componentes acessíveis e oito layouts disponíveis; janela Tauri, navegação, IPC, SQLite, preferências e builds preservados. CRUD, Trello, revisão persistente, planejamento e Meta permanecem nas fases futuras. O calendário apenas navega visualmente entre meses. Nenhuma publicação real é executada. Evidências e limites em [Fase 01.5](docs/FASE_01_5_VALIDACAO_WINDOWS.md) e [Fase 02](docs/FASE_02_IDENTIDADE_INTERFACE.md).
 
 ## Pré-requisitos
 
@@ -42,6 +42,8 @@ Para conferir apenas a interface no navegador:
 npm.cmd run dev:web
 ```
 
+Para inspecionar uma dimensão específica da janela nativa: `npm.cmd run dev -- --window-size 1366x768`. O override é temporário; tamanhos aceitos de 640×520 a 2560×1440. A moldura Windows aumenta as dimensões externas; em Full HD use a janela maximizada para ocupar o monitor.
+
 Abra a URL exibida no terminal. A prévia informa que o SQLite só existe na janela desktop e não simula dados. `npm.cmd` evita bloqueio de `npm.ps1` por políticas do PowerShell, sem alterar a política do sistema.
 
 ## Scripts
@@ -72,7 +74,7 @@ npm.cmd run build:desktop
 npm.cmd run dev
 ```
 
-Na janela: conferir “Banco conectado”, caminho do SQLite e fuso real; navegar por todas as áreas; fechar/reabrir; conferir preservação do banco e ausência de erro crítico. O build sem bundle não cria instalador; distribuição pertence à Fase 09.
+Na janela: conferir “Armazenamento conectado” na Topbar e o diagnóstico completo em Configurações → Armazenamento, incluindo caminho do SQLite e integridade; em Preferências, conferir o fuso real. Navegar por todas as áreas; fechar/reabrir; conferir preservação do banco e ausência de erro crítico. O build sem bundle não cria instalador; distribuição pertence à Fase 09.
 
 ## Dados e segurança
 
@@ -84,26 +86,27 @@ Frontend chama apenas `foundation_status`. SQLite pertence ao Rust; não há SQL
 
 ```text
 docs/                    documentação oficial e relatório da fase
-public/                  símbolo SVG provisório local
+public/                  símbolo SVG e Inter local com licença
 scripts/                 inicialização desktop com porta livre
 src/
   app/                   composição e navegação
   components/            elementos comuns e estados
   hooks/                 consulta de diagnóstico
   layouts/               moldura responsiva, CSS Modules
-  pages/                 Dashboard, Configurações, áreas futuras
+  pages/                 oito layouts editoriais, controles futuros indisponíveis
   services/              ponte IPC tipada
   styles/                tokens e estilos comuns
   types/                 contratos da fundação
+  utils/                 cálculo visual do calendário e fuso
 src-tauri/
   capabilities/          permissões mínimas
-  icons/                 PNG/ICO provisórios
+  icons/                 PNG/ICO da identidade do software
   migrations/            SQL versionado
   src/                   comandos, erros e repositório Rust
-tests/                   navegação, IPC e migração SQL
+tests/                   navegação, IPC, componentes acessíveis e migração SQL
 ```
 
-Pastas `features` e `utils` surgirão quando tiverem conteúdo real; não há arquivos vazios para simular arquitetura.
+A pasta `features` surgirá quando houver domínio real; não há arquivos vazios para simular arquitetura. Diretrizes visuais e contratos dos componentes em [Design system](docs/DESIGN_SYSTEM.md).
 
 ## Documentação oficial
 
@@ -114,6 +117,8 @@ Pastas `features` e `utils` surgirão quando tiverem conteúdo real; não há ar
 - [Decisões técnicas e versões](docs/DECISOES_TECNICAS.md).
 - [Resultado da Fase 01](docs/FASE_01_FUNDACAO.md).
 - [Preparação e validação Windows — Fase 01.5](docs/FASE_01_5_VALIDACAO_WINDOWS.md).
+- [Design system](docs/DESIGN_SYSTEM.md).
+- [Identidade e interface — Fase 02](docs/FASE_02_IDENTIDADE_INTERFACE.md).
 - [Instruções persistentes para agentes](AGENTS.md).
 
-Não avançar automaticamente para a Fase 02. Não executar publicação real sem autorização explícita. Git ignora dependências, builds, bancos operacionais, mídias e segredos; não há push automático.
+Não avançar automaticamente para a Fase 03. Não executar publicação real sem autorização explícita. Git ignora dependências, builds, bancos operacionais, mídias e segredos; não há push automático.

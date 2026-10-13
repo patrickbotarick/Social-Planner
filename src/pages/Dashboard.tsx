@@ -1,16 +1,32 @@
 import { Icon } from '../components/Icon';
+import { PageHeader } from '../components/PageHeader';
+import { Button } from '../components/ui/Button';
+import { Card, EmptyState } from '../components/ui/Presentation';
 import { StorageStatus } from '../components/StorageStatus';
 import type { FoundationState } from '../types/foundation';
 
 export function Dashboard({ state, onRefresh }: { state: FoundationState; onRefresh: () => Promise<void> }) {
   return <>
-    <section className="welcome-panel"><div><p className="eyebrow">UM LUGAR PARA CADA IDEIA</p><h2>O próximo mês começa<br />com um bom planejamento.</h2><p>A base do seu espaço editorial está sendo preparada.<br />Explore as áreas que vão acompanhar sua rotina.</p><a className="button light" href="#/biblioteca">Conhecer a biblioteca <span aria-hidden="true">→</span></a></div><div className="welcome-art" aria-hidden="true"><div className="paper"><span>PLANEJAR</span><div className="paper-grid">{Array.from({ length: 12 }, (_, i) => <i key={i} />)}</div><b>Uma ideia de cada vez.</b></div><div className="art-accent">+</div></div></section>
-    <div className="section-heading section-spaced"><h2>Seu fluxo editorial</h2><span className="muted small">Construído em etapas</span></div>
-    <div className="flow-grid">{[
-      { icon: 'importacoes', title: 'Receber', description: 'Campanhas e materiais da matriz.', phase: '04', href: 'importacoes' },
-      { icon: 'revisao', title: 'Selecionar', description: 'Conteúdo alinhado à sua unidade.', phase: '05', href: 'revisao' },
-      { icon: 'calendario', title: 'Planejar', description: 'Cada publicação no seu momento.', phase: '06', href: 'calendario' },
-    ].map((item) => <a className="flow-card" href={`#/${item.href}`} key={item.title}><div className="flow-top"><span className="icon-box"><Icon name={item.icon} /></span><span className="badge">Fase {item.phase}</span></div><h3>{item.title}</h3><p>{item.description}</p><span className="card-link">Ver área <span aria-hidden="true">↗</span></span></a>)}</div>
-    <div className="bottom-grid"><StorageStatus state={state} onRefresh={onRefresh} /><section className="panel scope-panel"><span className="eyebrow">NESTA VERSÃO</span><h2>Primeiro, uma base sólida.</h2><p>Navegação, estrutura local e documentação para evoluir com segurança.</p><ul><li>Áreas editoriais organizadas</li><li>Dados sob controle da unidade</li><li>Integrações previstas no roadmap</li></ul><p className="scope-note">Importação, revisão e agendamento serão disponibilizados nas próximas fases.</p></section></div>
+    <PageHeader title="Dashboard" description="Uma visão do seu planejamento editorial." actions={<Button disabled icon={<Icon name="nova-publicacao" />}>Nova publicação</Button>} />
+    <Card className="editorial-summary" aria-labelledby="summary-title">
+      <div className="card-heading"><h2 id="summary-title">Resumo editorial</h2><span className="small muted">Conteúdo da unidade</span></div>
+      <dl className="summary-row">{[{ label: 'Pendentes de revisão', phase: '05' }, { label: 'Aprovadas', phase: '05' }, { label: 'Planejadas', phase: '06' }].map((item) => <div className="summary-item" key={item.label}><dt>{item.label}</dt><dd aria-label="Contagem indisponível">—</dd><small>Disponível na Fase {item.phase}</small></div>)}</dl>
+      <p className="summary-note">Os contadores serão preenchidos quando a biblioteca editorial estiver disponível. Nenhuma contagem é simulada.</p>
+    </Card>
+    <div className="dashboard-columns">
+      <div className="dashboard-main">
+        <Card aria-labelledby="upcoming-title"><div className="card-heading"><h2 id="upcoming-title">Próximas publicações</h2><a href="#/calendario" className="small">Abrir calendário</a></div>
+          <div className="list-columns" aria-hidden="true"><span>Data</span><span>Publicação</span><span>Estado</span></div>
+          <EmptyState icon="calendario" title="Seu planejamento começa aqui" description="As publicações planejadas aparecerão nesta lista quando o calendário editorial estiver disponível." />
+        </Card>
+      </div>
+      <div className="dashboard-aside"><Card aria-labelledby="shortcuts-title"><div className="card-heading"><h2 id="shortcuts-title">Seu fluxo de trabalho</h2></div>
+        {[
+          { id: 'importacoes', title: 'Receber da matriz', text: 'Traga cartões e mídias do quadro Trello.', action: 'Importar do Trello', phase: '04' },
+          { id: 'revisao', title: 'Selecionar conteúdo', text: 'Revise as campanhas para Rio Preto.', action: 'Revisar publicações', phase: '05' },
+          { id: 'nova-publicacao', title: 'Criar na unidade', text: 'Prepare os conteúdos próprios da loja.', action: 'Criar publicação', phase: '03' },
+        ].map((item) => <a className="shortcut" href={'#/' + item.id} key={item.id} aria-label={'Abrir área: ' + item.action}><h3><Icon name={item.id} />{item.title}</h3><p>{item.text}</p><span className="small muted">Funcionalidade prevista na Fase {item.phase} <span aria-hidden="true">→</span></span></a>)}
+      </Card>{state.kind !== 'ready' && <StorageStatus state={state} onRefresh={onRefresh} compact />}</div>
+    </div>
   </>;
 }
