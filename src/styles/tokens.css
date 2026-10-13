@@ -1,0 +1,19 @@
+:root {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #263b32;
+  background: #f5f6f3;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --green-950: #123c2e;
+  --green-900: #173e32;
+  --green-700: #285842;
+  --green-soft: #e9f0e9;
+  --orange: #ec9b59;
+  --ink: #263b32;
+  --muted: #64716a;
+  --border: #dfe5dd;
+  --surface: #fff;
+  --background: #f5f6f3;
+  --radius: 14px;
+}

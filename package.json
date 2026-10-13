@@ -1,0 +1,48 @@
+{
+  "name": "gmad-social-planner",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": { "node": ">=24.0.0 <25" },
+  "scripts": {
+    "dev": "node scripts/desktop-dev.mjs",
+    "dev:web": "vite --host 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:sql": "node --test tests/migrations.test.mjs",
+    "build": "npm run typecheck && vite build",
+    "build:desktop": "tauri build --no-bundle",
+    "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml",
+    "check:rust": "cargo fmt --manifest-path src-tauri/Cargo.toml --check && cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",
+    "check": "npm run typecheck && npm run lint && npm test && npm run test:sql && npm run build",
+    "preview": "vite preview --host 127.0.0.1",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.12.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@tauri-apps/cli": "2.12.2",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.8",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "eslint": "10.12.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.13.0",
+    "jsdom": "27.4.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.71.2",
+    "vite": "8.3.4",
+    "vitest": "5.0.4"
+  }
+}
