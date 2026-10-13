@@ -4,6 +4,8 @@ Data: 13/10/2026, America/Sao_Paulo.
 
 **Estado: implementação entregue; aceite da execução desktop pendente.** Não declarar a fase integralmente concluída antes de compilar e abrir a janela Tauri com SQLite/IPC reais. As fases 02–09 não foram iniciadas.
 
+**Atualização da Fase 01.5 (13/10/2026):** diagnóstico refeito; Node/npm/WebView2 disponíveis, Rust/MSVC/SDK ausentes. Typecheck, lint, 11 testes frontend, 2 testes SQL e build frontend passaram novamente. Instaladores oficiais foram baixados, mas a instalação aguarda autorização. A janela nativa ainda não abriu. Resultado detalhado e passos de preparação em [FASE_01_5_VALIDACAO_WINDOWS.md](FASE_01_5_VALIDACAO_WINDOWS.md). As evidências abaixo preservam o registro da entrega original.
+
 ## Implementado
 
 - Documento mestre criado antes do código, com arquitetura, nove entidades planejadas, estados separados, integrações condicionais, qualidade e roadmap completo.

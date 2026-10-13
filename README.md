@@ -113,6 +113,7 @@ Pastas `features` e `utils` surgirão quando tiverem conteúdo real; não há ar
 - [Roadmap de nove fases](docs/ROADMAP.md).
 - [Decisões técnicas e versões](docs/DECISOES_TECNICAS.md).
 - [Resultado da Fase 01](docs/FASE_01_FUNDACAO.md).
+- [Preparação e validação Windows — Fase 01.5](docs/FASE_01_5_VALIDACAO_WINDOWS.md).
 - [Instruções persistentes para agentes](AGENTS.md).
 
 Não avançar automaticamente para a Fase 02. Não executar publicação real sem autorização explícita. Git ignora dependências, builds, bancos operacionais, mídias e segredos; não há push automático.

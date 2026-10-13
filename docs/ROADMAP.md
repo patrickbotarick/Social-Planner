@@ -2,6 +2,8 @@
 
 Fonte normativa: [Projeto mestre](PROJETO_MESTRE.md). Todas as fases além da 01 estão **não iniciadas**. Concluir código da fundação não equivale a validar sua execução nativa; acompanhar evidências em [Fase 01](FASE_01_FUNDACAO.md).
 
+Validação complementar: [Fase 01.5 — Windows](FASE_01_5_VALIDACAO_WINDOWS.md). Em 13/10/2026, a revalidação frontend/SQL passou; Rust/MSVC/SDK continuam ausentes. Instaladores oficiais preparados, aguardando autorização para instalação. A Fase 01.5 é uma etapa de aceite da fundação, sem alterar o roadmap de nove fases.
+
 | Fase | Objetivo | Escopo | Dependências | Conclusão verificável | Estado atual |
 | --- | --- | --- | --- | --- | --- |
 | 01 — Fundação e documentação | Base local testável | Mestre, arquitetura, React/Tauri, navegação, SQLite mínimo, testes, Git | Node 24; Rust MSVC; C++ Build Tools/SDK; WebView2 | Documentação consistente, janela inicia, navegação e IPC funcionam, banco inicializa e persiste, verificações registradas | Implementada; aceite desktop pendente por pré-requisitos ausentes |
