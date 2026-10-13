@@ -4,7 +4,11 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [react()],
   clearScreen: false,
-  server: { host: '127.0.0.1' },
+  server: {
+    host: '127.0.0.1',
+    // Rust builds generate HTML assets; they must not trigger frontend HMR.
+    watch: { ignored: ['**/src-tauri/**'] },
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],

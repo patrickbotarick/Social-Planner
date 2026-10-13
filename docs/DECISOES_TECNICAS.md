@@ -40,7 +40,7 @@ Consultas `npm view` incluíram `version`, `engines` e `peerDependencies`; npm i
 | rusqlite | 0.40.2 | Última versão estável consultada; feature `bundled` |
 | SQLite auxiliar dos testes Node | 3.50.4 | Só testes SQL, não é o driver operacional Rust |
 
-Cargo/Rust não estão instalados. Versões diretas das crates centrais foram conferidas em documentação oficial publicada, mas a resolução transitiva, MSRV efetiva, geração de `Cargo.lock` e compilação nativa permanecem pendentes. Não se afirma compatibilidade nativa executada. `serde` 1 e `tempfile` 3 serão resolvidos pelo Cargo; versionar o lockfile assim que gerado.
+Na Fase 01.5, Rust/Cargo 1.99.0 e rustup 1.29.1 foram instalados com autorização, juntamente com Build Tools 2022/MSVC e SDK. `Cargo.lock` registra 419 pacotes resolvidos, incluindo serde 1.0.229 e tempfile 3.27.0. `cargo check`, seis testes Rust, Clippy e build release passaram nesta toolchain. A versão mínima Rust não foi pesquisada/testada separadamente; a combinação instalada está comprovada. Evidências completas em FASE_01_5_VALIDACAO_WINDOWS.md.
 
 Fontes oficiais consultadas:
 
@@ -64,4 +64,8 @@ Não assumir que publicar via API equivale a agendar no Business Suite. A Fase 0
 
 ## ADR 009 — Validação honesta em ambiente incompleto
 
-Vitest cobre navegação, estados e contrato IPC com mocks explícitos. `node:sqlite` verifica o SQL real e persistência em arquivo temporário, sem dependência extra. Testes Rust exercitam repositório, migrações, corrupção e preservação, mas só podem ser declarados aprovados após `cargo test`. Falta de Rust/Build Tools será documentada; não instalar toolchains de sistema de grande porte silenciosamente.
+Vitest cobre navegação, estados e contrato IPC com mocks explícitos. `node:sqlite` verifica o SQL real e persistência em arquivo temporário, sem dependência extra. Os seis testes Rust exercitam repositório, migrações, corrupção e preservação e foram executados com sucesso na Fase 01.5. A janela nativa confirmou IPC e banco reais. A instalação de toolchains de sistema foi autorizada explicitamente antes da execução.
+
+## ADR 010 — Watcher frontend ignora arquivos Rust
+
+A validação nativa encontrou recarga incidental do Vite ao gerar assets HTML durante o build release em `src-tauri/target`. O watcher frontend ignora `**/src-tauri/**`; o watcher próprio do Tauri continua responsável pelo Rust. A configuração evita recargas por artefatos nativos sem alterar domínio, persistência ou escopo de produto.

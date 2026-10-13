@@ -2,7 +2,7 @@
 
 Aplicativo Windows local-first para organizar o conteúdo editorial de Instagram da GMAD Rio Preto, recebido mensalmente do Trello da matriz.
 
-**Estado:** Fase 01 implementada, com aceite desktop pendente por ausência de Rust e C++ Build Tools neste ambiente. Interface, documentação, SQLite mínimo e testes preparados. Biblioteca, Trello, revisão, calendário e Meta ainda não estão implementados. Nenhuma publicação real é executada. Resultado de validação em [docs/FASE_01_FUNDACAO.md](docs/FASE_01_FUNDACAO.md).
+**Estado:** Fase 01 implementada e validada nativamente neste Windows na Fase 01.5. Janela Tauri, navegação, IPC, SQLite e persistência após reabertura comprovados; testes e build desktop aprovados. Biblioteca, Trello, revisão, calendário e Meta ainda não estão implementados. Nenhuma publicação real é executada. Evidências e limites em [docs/FASE_01_5_VALIDACAO_WINDOWS.md](docs/FASE_01_5_VALIDACAO_WINDOWS.md).
 
 ## Pré-requisitos
 
@@ -11,7 +11,7 @@ Aplicativo Windows local-first para organizar o conteúdo editorial de Instagram
 - Git, disponível neste computador.
 - Para a janela desktop: **Microsoft C++ Build Tools**, workload **Desktop development with C++**, compilador MSVC x64/x86 e Windows SDK; **Rust estável com target MSVC**.
 
-Rust/Cargo e Build Tools não foram encontrados. Para preparar uma vez:
+Neste computador já estão instalados Rust/Cargo 1.99.0 (MSVC x64), rustup 1.29.1, Build Tools 2022 17.14.41 e Windows SDK 10.0.26100.0. O PATH de usuário inclui `.cargo\bin`. Para preparar outro computador:
 
 1. Baixe o [instalador oficial do Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/). Selecione **Desktop development with C++**, incluindo MSVC x64/x86 e Windows 10 ou 11 SDK, e instale.
 2. Baixe e execute [rustup-init.exe oficial](https://rustup.rs/). Use a instalação padrão com host `x86_64-pc-windows-msvc`.
@@ -34,9 +34,9 @@ Iniciar a janela desktop, depois de instalar os pré-requisitos:
 npm.cmd run dev
 ```
 
-O script escolhe uma porta livre de loopback e inicia Vite + Tauri. O primeiro build Rust baixa e compila as crates, podendo demorar. Após a primeira resolução Cargo, versionar `src-tauri/Cargo.lock` e executar os testes Rust. Não editar ou remover banco para corrigir erro de inicialização.
+O script escolhe uma porta livre de loopback e inicia Vite + Tauri. O primeiro build Rust baixa e compila as crates, podendo demorar. `src-tauri/Cargo.lock` já registra a resolução validada; não removê-lo para atualizar dependências implicitamente. Não editar ou remover banco para corrigir erro de inicialização. Se este terminal estava aberto antes de instalar Rust, abra um terminal novo para receber o PATH atualizado.
 
-Para conferir apenas a interface agora, sem Rust:
+Para conferir apenas a interface no navegador:
 
 ```powershell
 npm.cmd run dev:web

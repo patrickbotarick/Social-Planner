@@ -94,7 +94,7 @@ Prova técnica futura deve registrar versões, fontes oficiais, formatos suporta
 
 | Fase | Objetivo e escopo | Dependências | Critérios de conclusão | Estado |
 | --- | --- | --- | --- | --- |
-| 01 — Fundação e documentação | Documentos, shell desktop, navegação e SQLite mínimo | Node, Rust MSVC, C++ Build Tools, WebView2 | Documentos consistentes, inicialização desktop/banco e navegação verificadas; validações e limitações registradas | Implementada; aceite desktop pendente por pré-requisitos ausentes; resultado em FASE_01_FUNDACAO.md |
+| 01 — Fundação e documentação | Documentos, shell desktop, navegação e SQLite mínimo | Node, Rust MSVC, C++ Build Tools, WebView2 | Documentos consistentes, inicialização desktop/banco e navegação verificadas; validações e limitações registradas | Concluída tecnicamente e validada no Windows; evidências em FASE_01_5_VALIDACAO_WINDOWS.md |
 | 02 — Identidade visual e interface | Identidade definitiva e componentes acessíveis | 01 aceita, referências visuais | Interface consistente, responsiva e aprovada | Não iniciada |
 | 03 — Biblioteca editorial | Persistência editorial, mídias e criação manual | 02; migrações das entidades necessárias | Criar/editar/consultar conteúdo real sem perda de dados | Não iniciada |
 | 04 — Integração Trello | Autorização, cartões, anexos e importação incremental | 03; acesso oficial ao Trello | Importação repetível sem duplicação; falhas e limites tratados | Não iniciada |
@@ -125,5 +125,6 @@ Não iniciar outra fase sem solicitação. Detalhes de aceite e acompanhamento e
 - [Decisões técnicas](DECISOES_TECNICAS.md): justificativas e fontes de compatibilidade.
 - [Roadmap](ROADMAP.md): entregas e critérios por fase.
 - [Fase 01](FASE_01_FUNDACAO.md): evidências, limitações e aceite.
+- [Fase 01.5](FASE_01_5_VALIDACAO_WINDOWS.md): instalação autorizada e validação nativa Windows.
 
 Em conflito, este documento define o escopo; divergências de implementação devem ser corrigidas ou justificadas antes de ampliar contratos.

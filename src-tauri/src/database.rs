@@ -167,7 +167,9 @@ mod tests {
         assert_eq!(reopened.settings().unwrap().timezone, "UTC");
         let count: i64 = reopened
             .connection
-            .query_row("SELECT COUNT(*) FROM schema_migrations", [], |row| row.get(0))
+            .query_row("SELECT COUNT(*) FROM schema_migrations", [], |row| {
+                row.get(0)
+            })
             .unwrap();
         assert_eq!(count, 1);
     }
@@ -175,7 +177,11 @@ mod tests {
     #[test]
     fn failed_migration_rolls_back_all_ddl_and_metadata() {
         let mut connection = Connection::open_in_memory().unwrap();
-        let migrations = [(1, "broken", "CREATE TABLE example (id INTEGER); INVALID SQL;")];
+        let migrations = [(
+            1,
+            "broken",
+            "CREATE TABLE example (id INTEGER); INVALID SQL;",
+        )];
         assert!(migrate(&mut connection, &migrations).is_err());
         let count: i64 = connection
             .query_row(

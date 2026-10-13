@@ -23,7 +23,10 @@ pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             let database = (|| -> Result<Repository, AppError> {
-                let data_dir = app.path().app_data_dir().map_err(|_| AppError::database())?;
+                let data_dir = app
+                    .path()
+                    .app_data_dir()
+                    .map_err(|_| AppError::database())?;
                 std::fs::create_dir_all(&data_dir).map_err(|_| AppError::database())?;
                 Repository::open(&data_dir.join("planner.sqlite3"))
             })();
