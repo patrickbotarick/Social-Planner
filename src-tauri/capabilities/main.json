@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main",
-  "description": "Somente diagnóstico local da fundação, na janela principal.",
+  "description": "Diagnóstico e operações editoriais específicas na janela principal, sem acesso genérico a arquivos ou SQL.",
   "windows": ["main"],
-  "permissions": ["allow-foundation-status"]
+  "permissions": ["allow-foundation-status", "allow-publication-list", "allow-publication-get", "allow-publication-save", "allow-publication-duplicate", "allow-publication-delete", "allow-editorial-counts", "allow-media-select", "allow-media-discard", "core:event:allow-listen", "core:event:allow-unlisten", "core:window:allow-destroy"]
 }

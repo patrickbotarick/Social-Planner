@@ -7,17 +7,18 @@ Referência de escopo: [Projeto mestre](PROJETO_MESTRE.md).
 ```mermaid
 flowchart LR
   UI[React / TypeScript] --> Service[Serviço desktop tipado]
-  Service -->|foundation_status| IPC[Tauri / permissões da janela main]
+  Service -->|comandos específicos| IPC[Tauri / permissões da janela main]
   IPC --> Repo[Repositório Rust / Mutex]
   Repo --> DB[(SQLite local)]
   Repo --> Migration[Migrações SQL versionadas]
+  Repo --> Media[Armazenamento de mídia Rust / SHA-256]
 ```
 
 `src/app` define navegação por hash e composição. `layouts` contém AppShell (reaproveitado em AppLayout.tsx), Sidebar e Topbar. `pages` contém oito layouts distintos: Dashboard, Biblioteca, Importações, Revisão, Calendário, Nova publicação, Histórico e Configurações. `components/ui` reúne primitivas próprias, sem biblioteca completa de UI; `components` mantém diagnóstico, cabeçalho e barreira de erro. `hooks` coordena carregamento e descarte de respostas obsoletas. `services` é a fronteira IPC. `types` define os DTOs; `styles` define tokens, primitivas e composições; o shell usa CSS Modules. `utils/calendar.ts` calcula somente a grade visual e o dia no fuso IANA, sem persistência/agendamento.
 
-Não há roteador externo: oito páginas estáticas são atendidas por links de hash, com suporte a histórico e atualização direta. Rotas desconhecidas exibem Dashboard. Ao navegar, o conteúdo principal recebe foco e o título do documento muda. Isso não impede adotar roteador na fase que exigir parâmetros, rotas aninhadas ou formulários complexos.
+Não há roteador externo: páginas são atendidas por links de hash, com histórico e atualização direta. A Fase 03 acrescenta `#/biblioteca/<uuid>` e `#/biblioteca/<uuid>/editar`, com formulários e guarda de alterações não salvas em navegação, histórico e fechamento da janela. Rotas desconhecidas exibem Dashboard. Ao navegar, o conteúdo principal recebe foco e o título do documento muda.
 
-`src-tauri/src/lib.rs` resolve caminhos pelo Tauri, cria o diretório de dados e guarda `Result<Repository, AppError>` no estado. Uma falha do banco mantém a janela utilizável para mostrar orientação. O repositório não depende do Tauri; recebe um caminho confiável do chamador. `database.rs` controla conexão e migrações. Nenhum comando aceita SQL ou caminho vindo do frontend.
+`src-tauri/src/lib.rs` resolve caminhos pelo Tauri, cria o diretório de dados e guarda `Mutex<Result<EditorialRepository, AppError>>` no estado. Falha de abertura mantém a janela utilizável para mostrar orientação. O repositório não depende do Tauri; recebe caminho confiável do chamador. `database.rs` controla conexão/migrações; `editorial_domain.rs` valida DTOs e regras; `editorial_repository.rs` controla consultas/transações/versionamento; `media_store.rs` valida/copia arquivos e calcula checksums. Operações editoriais usam `spawn_blocking`. Nenhum comando aceita SQL ou caminho de origem vindo do frontend.
 
 ## Contrato IPC da Fase 01
 
@@ -48,7 +49,7 @@ Falhas: `{ code, message }` com códigos `DATABASE_UNAVAILABLE`, `DATABASE_INTEG
 
 ## Segurança
 
-`build.rs` declara o comando de aplicação no manifesto; a capability `main` concede apenas `allow-foundation-status` à janela `main`. Não há permissões para origens remotas, plugins de SQL, filesystem, shell ou HTTP. A CSP de produção permite ativos locais e IPC; a política de desenvolvimento adiciona somente o necessário para Vite/HMR em loopback. Recursos externos não são carregados pela UI.
+`build.rs` declara os comandos de aplicação no manifesto; a capability `main` concede diagnóstico e oito comandos editoriais específicos, além de listen/unlisten de eventos e destroy para guarda de fechamento. Não há permissões genéricas para origens remotas, SQL, filesystem, shell ou HTTP. O seletor oficial dialog é chamado apenas pelo Rust. Protocolo asset inicia com escopo vazio e libera somente mídia/staging controlados; CSP permite esses ativos locais em img-src/media-src. Desenvolvimento adiciona Vite/HMR em loopback. Recursos externos não são carregados pela UI.
 
 Credenciais e integração serão responsabilidade do Rust nas fases próprias. O SQLite editorial não é um cofre de segredos; arquivos locais herdam proteção do perfil Windows e não são criptografados por este aplicativo nesta fase. Guardar tokens no armazenamento seguro do sistema operacional quando existir autorização externa.
 
@@ -70,4 +71,12 @@ Backup futuro: snapshot consistente usando API de backup SQLite, manifesto de ve
 
 ## Estrutura deliberadamente enxuta
 
-`features/` será criado quando houver domínio real. `utils/` contém apenas a utilidade visual do calendário. Não existem pastas vazias para sugerir funcionalidades prontas. Símbolo e ícones Windows seguem a identidade proposta para o software na Fase 02, sem representar códigos oficiais de marca. Inter licenciada é incorporada localmente. Diretrizes em DESIGN_SYSTEM.md; instalação e critérios de validação no README e nos relatórios das fases.
+`features/editorial/` reúne formulário e prévias de mídia; páginas/hook/serviço/tipos editoriais preservam fronteiras de apresentação e IPC. `utils/` contém a utilidade visual do calendário. Não existem pastas vazias para sugerir funcionalidades prontas. Símbolo e ícones seguem a identidade proposta na Fase 02, sem representar códigos oficiais de marca. Inter licenciada é local. Diretrizes em DESIGN_SYSTEM.md; instalação e critérios de validação no README e nos relatórios.
+
+## Persistência editorial da Fase 03
+
+Migração 002 cria publications, media_assets e publication_media. Save é transacional e verifica versão esperada; duplicação compartilha assets; exclusão é lógica e conserva vínculos/arquivos. Busca normalizada, filtros e ordenações usam valores validados e consultas limitadas; cards recebem só a mídia principal. Dashboard consulta registros ativos reais.
+
+Mídias em `media/<sha256>.<extensão>`, staging em `temp/imports/<sessão>`, sob a raiz Tauri. Importação copia em blocos, valida conteúdo e limites, sem transformar bytes ou carregar vídeos inteiros. Promoção usa hard link atômico ou fallback de cópia sincronizada/rename. Falha anterior ao commit reverte banco e somente arquivos novos; resultado incerto conserva arquivos. Não existe limpeza destrutiva automática. Detalhes, limites e contratos em [Fase 03](FASE_03_BIBLIOTECA_EDITORIAL.md).
+
+`GMAD_QA_DATA_DIR`, absoluto e opt-in, permite perfil isolado exclusivamente em debug. Release ignora a variável e mantém o diretório operacional do Tauri. Testes Rust usam bancos/arquivos temporários; testes de componentes simulam somente sua fronteira IPC.

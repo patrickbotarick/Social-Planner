@@ -1,12 +1,20 @@
 mod database;
+mod editorial_domain;
+mod editorial_repository;
+#[cfg(test)]
+mod editorial_tests;
 mod error;
+mod media_store;
 
-use database::{FoundationStatus, Repository};
+use database::FoundationStatus;
+use editorial_domain::*;
+use editorial_repository::EditorialRepository;
 use error::AppError;
 use std::sync::Mutex;
 use tauri::Manager;
+use tauri_plugin_dialog::DialogExt;
 
-struct DatabaseState(Mutex<Result<Repository, AppError>>);
+struct DatabaseState(Mutex<Result<EditorialRepository, AppError>>);
 
 #[tauri::command]
 async fn foundation_status(
@@ -14,21 +22,153 @@ async fn foundation_status(
 ) -> Result<FoundationStatus, AppError> {
     let repository = state.0.lock().map_err(|_| AppError::database())?;
     match &*repository {
-        Ok(repository) => repository.status(),
+        Ok(repository) => repository.database.status(),
         Err(error) => Err(error.clone()),
     }
 }
 
+async fn with_repository<T: Send + 'static>(
+    app: tauri::AppHandle,
+    operation: impl FnOnce(&mut EditorialRepository) -> Result<T, AppError> + Send + 'static,
+) -> Result<T, AppError> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let state = app.state::<DatabaseState>();
+        let mut locked = state.0.lock().map_err(|_| AppError::database())?;
+        match &mut *locked {
+            Ok(repository) => operation(repository),
+            Err(error) => Err(error.clone()),
+        }
+    })
+    .await
+    .map_err(|_| AppError::database())?
+}
+
+#[tauri::command]
+async fn publication_list(
+    app: tauri::AppHandle,
+    query: LibraryQuery,
+) -> Result<LibraryPage, AppError> {
+    with_repository(app, move |r| r.list(query)).await
+}
+#[tauri::command]
+async fn publication_get(app: tauri::AppHandle, id: String) -> Result<Publication, AppError> {
+    with_repository(app, move |r| r.get(&id)).await
+}
+#[tauri::command]
+async fn publication_save(
+    app: tauri::AppHandle,
+    input: SavePublication,
+) -> Result<Publication, AppError> {
+    with_repository(app, move |r| r.save(input)).await
+}
+#[tauri::command]
+async fn publication_duplicate(app: tauri::AppHandle, id: String) -> Result<Publication, AppError> {
+    with_repository(app, move |r| r.duplicate(&id)).await
+}
+#[tauri::command]
+async fn publication_delete(
+    app: tauri::AppHandle,
+    id: String,
+    expected_version: u32,
+) -> Result<(), AppError> {
+    with_repository(app, move |r| r.delete(&id, expected_version)).await
+}
+#[tauri::command]
+async fn editorial_counts(app: tauri::AppHandle) -> Result<EditorialCounts, AppError> {
+    with_repository(app, |r| r.counts()).await
+}
+#[tauri::command]
+async fn media_discard(app: tauri::AppHandle, ids: Vec<String>) -> Result<(), AppError> {
+    if ids.len() > 20 {
+        return Err(AppError::validation());
+    }
+    with_repository(app, move |r| r.storage.discard(&ids)).await
+}
+#[tauri::command]
+async fn media_select(
+    app: tauri::AppHandle,
+    format: PublicationFormat,
+) -> Result<ImportResult, AppError> {
+    let chooser = app.clone();
+    let files = tauri::async_runtime::spawn_blocking(move || {
+        let mut dialog = chooser
+            .dialog()
+            .file()
+            .set_title("Selecionar mídias da publicação")
+            .add_filter("Imagens e vídeos", &["jpg", "jpeg", "png", "webp", "mp4"]);
+        if let Some(parent) = chooser.get_webview_window("main") {
+            dialog = dialog.set_parent(&parent);
+        }
+        if format == PublicationFormat::Carousel {
+            dialog.blocking_pick_files().unwrap_or_default()
+        } else {
+            dialog.blocking_pick_file().into_iter().collect()
+        }
+    })
+    .await
+    .map_err(|_| AppError::file())?;
+    if files.len() > 20 {
+        return Err(AppError::validation());
+    }
+    with_repository(app, move |r| {
+        let mut result = ImportResult {
+            media: Vec::new(),
+            issues: Vec::new(),
+        };
+        for file in files {
+            let path = file.into_path().map_err(|_| AppError::file())?;
+            let filename = path
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .into_owned();
+            match r.storage.stage(&path) {
+                Ok(media) if format.accepts(&media.mime_type) => result.media.push(media),
+                Ok(media) => {
+                    r.storage.discard(&[media.id])?;
+                    result.issues.push(ImportIssue {
+                        filename,
+                        message: AppError::validation().message,
+                    });
+                }
+                Err(error) => result.issues.push(ImportIssue {
+                    filename,
+                    message: error.message,
+                }),
+            }
+        }
+        Ok(result)
+    })
+    .await
+}
+
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
-            let database = (|| -> Result<Repository, AppError> {
-                let data_dir = app
+            let database = (|| -> Result<EditorialRepository, AppError> {
+                let mut data_dir = app
                     .path()
                     .app_data_dir()
                     .map_err(|_| AppError::database())?;
+                // QA opt-in exclusivo de builds debug; não altera o perfil operacional.
+                if cfg!(debug_assertions) {
+                    if let Some(path) = std::env::var_os("GMAD_QA_DATA_DIR") {
+                        data_dir = path.into();
+                        if !data_dir.is_absolute() {
+                            return Err(AppError::file());
+                        }
+                    }
+                }
                 std::fs::create_dir_all(&data_dir).map_err(|_| AppError::database())?;
-                Repository::open(&data_dir.join("planner.sqlite3"))
+                let repository = EditorialRepository::open(&data_dir)?;
+                app.asset_protocol_scope()
+                    .allow_directory(&repository.storage.directory, false)
+                    .map_err(|_| AppError::file())?;
+                app.asset_protocol_scope()
+                    .allow_directory(&repository.storage.staging_directory, false)
+                    .map_err(|_| AppError::file())?;
+                Ok(repository)
             })();
             match &database {
                 Ok(_) => eprintln!("[foundation] DATABASE_READY"),
@@ -38,7 +178,17 @@ pub fn run() {
             app.manage(DatabaseState(Mutex::new(database)));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![foundation_status])
+        .invoke_handler(tauri::generate_handler![
+            foundation_status,
+            publication_list,
+            publication_get,
+            publication_save,
+            publication_duplicate,
+            publication_delete,
+            editorial_counts,
+            media_select,
+            media_discard
+        ])
         .run(tauri::generate_context!())
         .expect("Não foi possível iniciar a janela desktop do GMAD Social Planner");
 }

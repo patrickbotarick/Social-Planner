@@ -5,6 +5,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import './styles/tokens.css';
 import './styles/global.css';
 import './styles/pages.css';
+import './styles/editorial.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Elemento raiz não encontrado.');

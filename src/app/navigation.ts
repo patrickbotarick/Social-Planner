@@ -11,5 +11,5 @@ export const sections = [
 
 export type Section = (typeof sections)[number];
 export function sectionFromHash(hash: string): Section {
-  return sections.find((section) => `#/${section.id}` === hash) ?? sections[0];
+  return sections.find((section) => `#/${section.id}` === hash || section.id === 'biblioteca' && /^#\/biblioteca\/[0-9a-f-]{36}(\/editar)?$/i.test(hash)) ?? sections[0];
 }

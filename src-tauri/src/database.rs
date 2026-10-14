@@ -3,11 +3,18 @@ use rusqlite::{params, Connection, TransactionBehavior};
 use serde::Serialize;
 use std::{path::Path, time::Duration};
 
-const MIGRATIONS: &[(i64, &str, &str)] = &[(
-    1,
-    "foundation",
-    include_str!("../migrations/001_foundation.sql"),
-)];
+const MIGRATIONS: &[(i64, &str, &str)] = &[
+    (
+        1,
+        "foundation",
+        include_str!("../migrations/001_foundation.sql"),
+    ),
+    (
+        2,
+        "editorial_library",
+        include_str!("../migrations/002_editorial_library.sql"),
+    ),
+];
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -27,7 +34,7 @@ pub struct FoundationStatus {
 }
 
 pub struct Repository {
-    connection: Connection,
+    pub(crate) connection: Connection,
     database_path: String,
 }
 
@@ -147,12 +154,54 @@ mod tests {
     use super::*;
 
     #[test]
+    fn incremental_editorial_migration_preserves_existing_foundation() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("previous.sqlite3");
+        let created;
+        {
+            let mut connection = Connection::open(&path).unwrap();
+            migrate(&mut connection, &MIGRATIONS[..1]).unwrap();
+            connection
+                .execute("UPDATE app_settings SET timezone='UTC' WHERE id=1", [])
+                .unwrap();
+            created = connection
+                .query_row("SELECT created_at FROM app_settings", [], |r| {
+                    r.get::<_, String>(0)
+                })
+                .unwrap();
+        }
+        let repository = Repository::open(&path).unwrap();
+        assert_eq!(repository.status().unwrap().schema_version, 2);
+        assert_eq!(repository.settings().unwrap().timezone, "UTC");
+        assert_eq!(repository.settings().unwrap().created_at, created);
+        assert_eq!(
+            repository
+                .connection
+                .query_row("SELECT COUNT(*) FROM publications", [], |r| r
+                    .get::<_, i32>(0))
+                .unwrap(),
+            0
+        );
+        assert_eq!(
+            repository
+                .connection
+                .query_row(
+                    "SELECT source_sql FROM schema_migrations WHERE version=1",
+                    [],
+                    |r| r.get::<_, String>(0)
+                )
+                .unwrap(),
+            MIGRATIONS[0].2
+        );
+    }
+
+    #[test]
     fn initialization_is_idempotent_and_settings_persist_after_reopening() {
         let directory = tempfile::tempdir().unwrap();
         let path = directory.path().join("test.sqlite3");
         {
             let repository = Repository::open(&path).unwrap();
-            assert_eq!(repository.status().unwrap().schema_version, 1);
+            assert_eq!(repository.status().unwrap().schema_version, 2);
             assert_eq!(repository.settings().unwrap().timezone, "America/Sao_Paulo");
             // Exercita persistência sem expor edição de configurações no IPC desta fase.
             repository
@@ -171,7 +220,7 @@ mod tests {
                 row.get(0)
             })
             .unwrap();
-        assert_eq!(count, 1);
+        assert_eq!(count, 2);
     }
 
     #[test]
@@ -205,7 +254,10 @@ mod tests {
             "SCHEMA_UNSUPPORTED"
         );
         connection
-            .execute("UPDATE schema_migrations SET version = 99", [])
+            .execute(
+                "UPDATE schema_migrations SET version = 99 WHERE version = 2",
+                [],
+            )
             .unwrap();
         assert_eq!(
             migrate(&mut connection, MIGRATIONS).unwrap_err().code,

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-editorial-counts"
+description = "Enables the editorial_counts command without any pre-configured scope."
+commands.allow = ["editorial_counts"]
+
+[[permission]]
+identifier = "deny-editorial-counts"
+description = "Denies the editorial_counts command without any pre-configured scope."
+commands.deny = ["editorial_counts"]

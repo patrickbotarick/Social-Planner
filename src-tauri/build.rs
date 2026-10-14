@@ -1,7 +1,16 @@
 fn main() {
-    tauri_build::try_build(
-        tauri_build::Attributes::new()
-            .app_manifest(tauri_build::AppManifest::new().commands(&["foundation_status"])),
-    )
+    tauri_build::try_build(tauri_build::Attributes::new().app_manifest(
+        tauri_build::AppManifest::new().commands(&[
+            "foundation_status",
+            "publication_list",
+            "publication_get",
+            "publication_save",
+            "publication_duplicate",
+            "publication_delete",
+            "editorial_counts",
+            "media_select",
+            "media_discard",
+        ]),
+    ))
     .expect("Falha ao preparar os recursos e permissões do Tauri");
 }

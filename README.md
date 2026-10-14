@@ -2,7 +2,7 @@
 
 Aplicativo Windows local-first para organizar o conteúdo editorial de Instagram da GMAD Rio Preto, recebido mensalmente do Trello da matriz.
 
-**Estado:** Fases 01 e 02 implementadas e validadas tecnicamente neste Windows. Identidade editorial, Inter local, componentes acessíveis e oito layouts disponíveis; janela Tauri, navegação, IPC, SQLite, preferências e builds preservados. CRUD, Trello, revisão persistente, planejamento e Meta permanecem nas fases futuras. O calendário apenas navega visualmente entre meses. Nenhuma publicação real é executada. Evidências e limites em [Fase 01.5](docs/FASE_01_5_VALIDACAO_WINDOWS.md) e [Fase 02](docs/FASE_02_IDENTIDADE_INTERFACE.md).
+**Estado:** Fases 01 e 02 validadas tecnicamente neste Windows. A Fase 03 implementa biblioteca local: cadastro manual, imagens/vídeos, detalhes, edição, duplicação, exclusão lógica, busca, filtros e contagens reais. São 53 testes automatizados aprovados; o estado do aceite desktop está registrado na [Fase 03](docs/FASE_03_BIBLIOTECA_EDITORIAL.md). Trello, revisão completa, planejamento persistente e Meta permanecem nas fases futuras. O calendário apenas navega visualmente entre meses. Nenhuma publicação externa é executada.
 
 ## Pré-requisitos
 
@@ -78,9 +78,11 @@ Na janela: conferir “Armazenamento conectado” na Topbar e o diagnóstico com
 
 ## Dados e segurança
 
-Banco resolvido via Tauri `app_data_dir()`, normalmente `%APPDATA%\br.com.gmad.socialplanner\planner.sqlite3`. A UI mostra o caminho real. Não fica dentro da instalação. Esquema mínimo: histórico de migrações e preferência de fuso. Nenhum token, mídia editorial ou publicação de exemplo é gravado.
+Banco resolvido via Tauri `app_data_dir()`, normalmente `%APPDATA%\br.com.gmad.socialplanner\planner.sqlite3`. A UI mostra o caminho real. Migração incremental 002 acrescenta publicações, assets e vínculos ordenados, preservando histórico e preferências. Mídias importadas pelo operador ficam em `media/<sha256>.<extensão>` nessa raiz; staging usa `temp/imports/<sessão>`. Originais não são alterados. Nenhum conteúdo de demonstração ou token é inserido na base operacional.
 
-Frontend chama apenas `foundation_status`. SQLite pertence ao Rust; não há SQL arbitrário, login interno, backend remoto ou serviços pagos. Segredos de integrações futuras devem usar o cofre do Windows. Backup ainda é planejamento documentado, não função disponível.
+Frontend chama comandos IPC específicos de diagnóstico e biblioteca. SQLite, seleção nativa, validação e cópia de arquivos pertencem ao Rust. Prévia de mídia usa protocolo asset limitado aos diretórios controlados. Não há SQL ou filesystem arbitrário, login interno, backend remoto ou serviços pagos. Exclusão é lógica e preserva arquivos compartilhados; não existe limpeza física automática. Segredos futuros devem usar o cofre do Windows. Backup ainda é planejamento documentado.
+
+Para cadastrar: Criar publicação → título, formato e legenda → Selecionar mídias → Salvar publicação. Feed aceita uma imagem; carrossel aceita 2–20 mídias ordenadas; Reels aceita um MP4; Stories aceita uma imagem ou MP4. Imagens JPEG/PNG/WebP até 64 MiB e vídeos MP4 até 512 MiB, sujeitos à validação do conteúdo. Reprodução depende do codec disponível no WebView2, sem transcodificação. Legendas preservam emojis e quebras de linha; alterações não salvas têm guarda de saída.
 
 ## Organização
 
@@ -91,22 +93,23 @@ scripts/                 inicialização desktop com porta livre
 src/
   app/                   composição e navegação
   components/            elementos comuns e estados
-  hooks/                 consulta de diagnóstico
+  features/editorial/    editor e prévias de mídia
+  hooks/                 consultas de diagnóstico e biblioteca
   layouts/               moldura responsiva, CSS Modules
-  pages/                 oito layouts editoriais, controles futuros indisponíveis
+  pages/                 biblioteca, detalhes, cadastro e layouts futuros
   services/              ponte IPC tipada
   styles/                tokens e estilos comuns
-  types/                 contratos da fundação
+  types/                 contratos da fundação e biblioteca
   utils/                 cálculo visual do calendário e fuso
 src-tauri/
   capabilities/          permissões mínimas
   icons/                 PNG/ICO da identidade do software
   migrations/            SQL versionado
-  src/                   comandos, erros e repositório Rust
-tests/                   navegação, IPC, componentes acessíveis e migração SQL
+  src/                   comandos, domínio, repositórios e armazenamento Rust
+tests/                   componentes, migrações SQL e fixture MP4 licenciada
 ```
 
-A pasta `features` surgirá quando houver domínio real; não há arquivos vazios para simular arquitetura. Diretrizes visuais e contratos dos componentes em [Design system](docs/DESIGN_SYSTEM.md).
+Diretrizes visuais e contratos dos componentes em [Design system](docs/DESIGN_SYSTEM.md). Testes Rust usam banco/arquivos temporários; `GMAD_QA_DATA_DIR` permite uma raiz isolada somente em debug, sem mudar a localização de produção.
 
 ## Documentação oficial
 
@@ -119,6 +122,7 @@ A pasta `features` surgirá quando houver domínio real; não há arquivos vazio
 - [Preparação e validação Windows — Fase 01.5](docs/FASE_01_5_VALIDACAO_WINDOWS.md).
 - [Design system](docs/DESIGN_SYSTEM.md).
 - [Identidade e interface — Fase 02](docs/FASE_02_IDENTIDADE_INTERFACE.md).
+- [Biblioteca editorial — Fase 03](docs/FASE_03_BIBLIOTECA_EDITORIAL.md).
 - [Instruções persistentes para agentes](AGENTS.md).
 
-Não avançar automaticamente para a Fase 03. Não executar publicação real sem autorização explícita. Git ignora dependências, builds, bancos operacionais, mídias e segredos; não há push automático.
+Não avançar automaticamente para a Fase 04. Não executar publicação externa sem autorização explícita. Git ignora dependências, builds, bancos operacionais, mídias e segredos; não há push automático.

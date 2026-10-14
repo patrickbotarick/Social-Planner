@@ -6,7 +6,7 @@ Fonte oficial de escopo e contratos. Criado em 13/10/2026. Alterações relevant
 
 Aplicativo Windows desktop para um único operador da GMAD Rio Preto organizar o conteúdo editorial recebido mensalmente da matriz pelo Trello. Resolve a dispersão de textos e mídias e permite selecionar campanhas aplicáveis à loja antes de planejar publicações no Instagram.
 
-O produto completo permitirá importar, revisar, editar, criar, aprovar, planejar e acompanhar publicações. A Fase 01 entrega documentação, estrutura técnica, navegação, diagnóstico local e persistência mínima, validada no Windows. A Fase 02 consolida a identidade editorial do software, componentes acessíveis e layouts das oito áreas, sem implementar operações editoriais das fases seguintes.
+O produto completo permitirá importar, revisar, editar, criar, aprovar, planejar e acompanhar publicações. A Fase 01 entrega a fundação Windows validada; a Fase 02 consolida identidade e layouts. A Fase 03 implementa biblioteca manual, cópia local de mídias, edição, detalhes, pesquisa, duplicação e exclusão lógica; foi validada no Tauri Windows em 14/10/2026, com 53 testes aprovados, builds e persistência após reabertura. Trello, revisão completa, agendamento e publicação externa continuam nas fases próprias.
 
 ### Restrições permanentes
 
@@ -38,11 +38,11 @@ Frontend: apresentação, navegação, estados de carregamento/erro/vazio e vali
 
 Rust: validação de comandos, caminhos confiáveis, persistência, migrações, integridade e futuras integrações. Erros retornam códigos e mensagens úteis sem conteúdo sensível. Logs operacionais serão locais, mínimos e sem textos editoriais ou credenciais.
 
-Diretório: `app.path().app_data_dir()` do Tauri, que no Windows resolve o diretório de dados do usuário sob o identificador estável `br.com.gmad.socialplanner`. Banco `planner.sqlite3`; mídias futuras em `media/`. Nunca usar a pasta de instalação. Não renomear o identificador sem plano explícito de migração de dados.
+Diretório: `app.path().app_data_dir()` do Tauri, que no Windows resolve o diretório de dados do usuário sob o identificador estável `br.com.gmad.socialplanner`. Banco `planner.sqlite3`, mídias por checksum em `media/` e cópias temporárias em `temp/imports/<sessão>/`. Nunca usar a pasta de instalação. Não renomear o identificador sem plano explícito de migração de dados.
 
-Uma conexão SQLite sincronizada atende os comandos locais; inicialização usa transações, foreign keys, busy timeout e verificação `quick_check`. Migrações desconhecidas ou banco inválido bloqueiam acesso sem apagar ou recriar dados. Esquema mínimo da fase: histórico de migrações e preferências locais. Entidades editoriais ainda não possuem tabelas.
+Uma conexão SQLite sincronizada atende os comandos locais; inicialização usa transações, foreign keys, busy timeout e verificação `quick_check`. Migrações desconhecidas ou banco inválido bloqueiam acesso sem apagar ou recriar dados. Versão 1 mantém histórico/preferências; migração incremental 002 acrescenta publications, media_assets e publication_media sem dados pré-carregados.
 
-Permissões: janela local única, CSP restritiva, sem plugins genéricos de shell, filesystem, HTTP ou SQL expostos ao frontend. A prévia web identifica a indisponibilidade do desktop, sem simular persistência.
+Permissões: janela local única, CSP restritiva, comandos específicos e sem plugins genéricos de shell, filesystem, HTTP ou SQL expostos ao frontend. Seletor de arquivos no Rust; protocolo asset limitado aos diretórios controlados de mídia/staging. Eventos e destroy da janela permitem a guarda de fechamento. A prévia web identifica a indisponibilidade do desktop, sem simular persistência.
 
 ## 4. Modelo de dados planejado
 
@@ -68,7 +68,7 @@ Reimportação: usar IDs externos e upsert transacional, nunca título como iden
 
 Os estados abaixo pertencem a eixos distintos; não serão condensados num único campo de status.
 
-**Editorial:** `pending_review` (pendente) → `editing`, `approved` ou `ignored`; `editing` → `pending_review`; `ignored` → `pending_review` por reabertura; `approved` → `ready_to_schedule` após validar conteúdo/mídia; `approved` e `ready_to_schedule` → `editing` mediante alteração. Aprovação e prontidão se referem à versão revisada. Alterar conteúdo invalida prontidão e exige nova revisão.
+**Editorial:** `draft` (rascunho manual, inicial na Fase 03); editar mantém draft e incrementa versão, duplicar cria outro draft. A passagem draft → pending_review pertence à revisão futura. Transições planejadas da Fase 05: `pending_review` → `editing`, `approved` ou `ignored`; `editing` → `pending_review`; `ignored` → `pending_review` por reabertura; `approved` → `ready_to_schedule` após validar conteúdo/mídia; `approved` e `ready_to_schedule` → `editing` mediante alteração. Aprovação e prontidão se referem à versão revisada. Não há segunda lógica concorrente de estados.
 
 **Agendamento:** `local` (agendado apenas neste computador) → `submitting` → `submitted` (recebido, ainda sem confirmação) → `confirmed` somente com evidência oficial; `submitting`/`submitted` → `failed` quando falha inequívoca, ou `unknown` quando o resultado é incerto. `failed` → nova tentativa após correção; `unknown` exige reconciliação antes de reenviar. Cancelamento/reagendamento confirmado externamente requer reconciliação oficial; nenhuma operação local deve afirmar que cancelou na plataforma.
 
@@ -78,7 +78,7 @@ Fluxo assistido registra intenção local e ação humana; abrir Business Suite 
 
 ## 6. Interface
 
-Dashboard mostra situação real da fundação e do banco, sem métricas editoriais inexistentes. Menu: Dashboard, Biblioteca editorial, Importações Trello, Revisão de publicações, Calendário mensal, Nova publicação, Histórico e Configurações. Todas as áreas têm navegação funcional; áreas futuras informam fase prevista e ações desabilitadas. Configurações mostra preferências reais em modo leitura nesta fase.
+Dashboard consulta contagens reais de publicações ativas: total, rascunhos, pendentes e aprovadas; próximas publicações continuam vazias porque planejamento não foi implementado. Menu: Dashboard, Biblioteca editorial, Importações Trello, Revisão de publicações, Calendário mensal, Nova publicação, Histórico e Configurações. Biblioteca e cadastro manual têm operações locais; detalhes/edição usam subrotas de hash com UUID. Áreas futuras informam fase prevista e ações desabilitadas. Configurações mostra preferências reais em modo leitura.
 
 Verde profundo, branco, cinza e detalhe laranja formam a identidade do software consolidada na Fase 02, documentada em DESIGN_SYSTEM.md, sem afirmar códigos oficiais da marca. Inter local licenciada, layout adaptável, foco visível, links semânticos, títulos e estados acessíveis. Nenhum dado demonstrativo deve se passar por dado real.
 
@@ -96,7 +96,7 @@ Prova técnica futura deve registrar versões, fontes oficiais, formatos suporta
 | --- | --- | --- | --- | --- |
 | 01 — Fundação e documentação | Documentos, shell desktop, navegação e SQLite mínimo | Node, Rust MSVC, C++ Build Tools, WebView2 | Documentos consistentes, inicialização desktop/banco e navegação verificadas; validações e limitações registradas | Concluída tecnicamente e validada no Windows; evidências em FASE_01_5_VALIDACAO_WINDOWS.md |
 | 02 — Identidade visual e interface | Identidade definitiva e componentes acessíveis | 01 aceita, referências visuais | Interface consistente, responsiva e aprovada | Implementada e validada tecnicamente no Windows; evidências em FASE_02_IDENTIDADE_INTERFACE.md; apreciação visual final disponível ao usuário |
-| 03 — Biblioteca editorial | Persistência editorial, mídias e criação manual | 02; migrações das entidades necessárias | Criar/editar/consultar conteúdo real sem perda de dados | Não iniciada |
+| 03 — Biblioteca editorial | Persistência editorial, mídias e criação manual | 02; migrações das entidades necessárias | Criar/editar/consultar conteúdo real sem perda de dados | Concluída tecnicamente e validada no Windows em 14/10/2026; evidências e limites em FASE_03_BIBLIOTECA_EDITORIAL.md |
 | 04 — Integração Trello | Autorização, cartões, anexos e importação incremental | 03; acesso oficial ao Trello | Importação repetível sem duplicação; falhas e limites tratados | Não iniciada |
 | 05 — Revisão e aprovação | Decisões, histórico e validação de prontidão | 03 e 04 | Transições válidas e rastreáveis por versão | Não iniciada |
 | 06 — Calendário mensal | Planejamento local com fuso e conflitos | 05 | Agendar/replanejar localmente sem alegar confirmação Meta | Não iniciada |
@@ -128,5 +128,6 @@ Não iniciar outra fase sem solicitação. Detalhes de aceite e acompanhamento e
 - [Fase 01.5](FASE_01_5_VALIDACAO_WINDOWS.md): instalação autorizada e validação nativa Windows.
 - [Design system](DESIGN_SYSTEM.md): identidade do software, componentes, acessibilidade e responsividade.
 - [Fase 02](FASE_02_IDENTIDADE_INTERFACE.md): implementação, testes e evidências visuais nativas.
+- [Fase 03](FASE_03_BIBLIOTECA_EDITORIAL.md): biblioteca, mídias, contratos, testes e estado do aceite.
 
 Em conflito, este documento define o escopo; divergências de implementação devem ser corrigidas ou justificadas antes de ampliar contratos.

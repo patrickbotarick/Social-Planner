@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-publication-save"
+description = "Enables the publication_save command without any pre-configured scope."
+commands.allow = ["publication_save"]
+
+[[permission]]
+identifier = "deny-publication-save"
+description = "Denies the publication_save command without any pre-configured scope."
+commands.deny = ["publication_save"]

@@ -6,11 +6,13 @@ import { sections } from '../src/app/navigation';
 import { desktopAvailable, getFoundationStatus } from '../src/services/desktop';
 import type { FoundationStatus } from '../src/types/foundation';
 import type * as DesktopService from '../src/services/desktop';
+import type * as EditorialService from '../src/services/editorial';
 
 vi.mock('../src/services/desktop', async (importOriginal) => {
   const original = await importOriginal<typeof DesktopService>();
   return { ...original, desktopAvailable: vi.fn(), getFoundationStatus: vi.fn() };
 });
+vi.mock('../src/services/editorial', async (importOriginal) => ({ ...await importOriginal<typeof EditorialService>(), getEditorialCounts: vi.fn().mockResolvedValue({ total: 0, drafts: 0, pendingReview: 0, approved: 0 }) }));
 
 const status: FoundationStatus = {
   schemaVersion: 1,
@@ -45,7 +47,7 @@ describe('Fundação editorial', () => {
         const content = within(screen.getByRole('main'));
         const actions = [...content.queryAllByRole('button'), ...content.queryAllByRole('searchbox'), ...content.queryAllByRole('textbox'), ...content.queryAllByRole('combobox')];
         expect(actions.some((action) => action.hasAttribute('disabled'))).toBe(true);
-        if (section.id !== 'calendario') actions.forEach((action) => { expect(action).toBeDisabled(); });
+        if (!['calendario', 'nova-publicacao'].includes(section.id)) actions.forEach((action) => { expect(action).toBeDisabled(); });
       }
     }
   });
