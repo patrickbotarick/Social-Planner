@@ -67,3 +67,19 @@ test('migração editorial preserva preferências e restringe referências, orde
     assert.equal(db.prepare('PRAGMA quick_check').get().quick_check,'ok');
   } finally { db.close(); }
 });
+const trelloSql = readFileSync(new URL('../src-tauri/migrations/003_trello_import.sql', import.meta.url), 'utf8');
+test('migração Trello é aditiva e garante uma origem e publicação inicial por cartão', () => {
+  const db = new DatabaseSync(':memory:');
+  try {
+    db.exec('PRAGMA foreign_keys=ON'); db.exec(sql); db.exec(editorialSql);
+    db.exec("INSERT INTO publications(id,title,caption,search_text,format) VALUES('manual','Manual','Preservar','manual','feed')");
+    const before = db.prepare('SELECT * FROM publications').get();
+    db.exec(trelloSql); assert.deepEqual(db.prepare('SELECT * FROM publications').get(), before);
+    db.exec("INSERT INTO trello_boards(id,remote_id,name,url) VALUES('b','remote-board','Quadro','https://trello.com/b/Ab12Cd34')");
+    db.exec("INSERT INTO imported_cards(id,remote_id,board_id,publication_id,original_title,original_description,source_list,metadata_json,source_hash) VALUES('c','remote-card','b','manual','Original','Descrição','Lista','{}','hash')");
+    assert.throws(() => db.exec("INSERT INTO imported_cards SELECT 'c2',remote_id,board_id,publication_id,original_title,original_description,source_list,metadata_json,source_hash,source_updated_at,source_changed,source_missing,needs_adjustment,last_synced_at FROM imported_cards"));
+    assert.throws(() => db.exec("DELETE FROM trello_boards WHERE id='b'"));
+    assert.deepEqual(db.prepare('PRAGMA foreign_key_check').all(), []);
+    assert.equal(db.prepare('PRAGMA quick_check').get().quick_check, 'ok');
+  } finally { db.close(); }
+});

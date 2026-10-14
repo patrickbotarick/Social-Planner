@@ -8,7 +8,7 @@ pub struct EditorialRepository {
     pub database: Repository,
     pub storage: MediaStore,
 }
-fn normalized(text: &str) -> String {
+pub(crate) fn normalized(text: &str) -> String {
     text.nfd()
         .filter(|c| !is_combining_mark(*c))
         .flat_map(char::to_lowercase)
@@ -31,7 +31,7 @@ fn media_row(row: &Row<'_>) -> rusqlite::Result<MediaAsset> {
     })
 }
 const MEDIA_COLUMNS: &str = "m.id, m.filename, m.mime_type, m.extension, m.size_bytes, m.storage_path, m.width, m.height, m.duration, m.checksum, m.created_at";
-fn asset(connection: &Connection, id: &str) -> Result<MediaAsset, AppError> {
+pub(crate) fn asset(connection: &Connection, id: &str) -> Result<MediaAsset, AppError> {
     connection
         .query_row(
             &format!("SELECT {MEDIA_COLUMNS} FROM media_assets m WHERE m.id=?1"),
@@ -41,7 +41,7 @@ fn asset(connection: &Connection, id: &str) -> Result<MediaAsset, AppError> {
         .optional()?
         .ok_or_else(AppError::not_found)
 }
-fn with_preview(mut media: MediaAsset, storage: &MediaStore) -> MediaAsset {
+pub(crate) fn with_preview(mut media: MediaAsset, storage: &MediaStore) -> MediaAsset {
     media.preview_path = storage
         .path(&media.storage_path)
         .ok()
@@ -88,7 +88,10 @@ impl EditorialRepository {
                     .unwrap_or_else(|| asset(&self.database.connection, id))
             })
             .collect::<Result<Vec<_>, _>>()?;
-        input.format.validate(&media)?;
+        let imported_pending = input.id.as_ref().is_some_and(|id| self.database.connection.query_row("SELECT source='trello' AND editorial_status='pending_review' FROM publications WHERE id=?1", [id], |r| r.get::<_,bool>(0)).unwrap_or(false));
+        if !(imported_pending && media.is_empty()) {
+            input.format.validate(&media)?;
+        }
         for m in &media {
             if !self.storage.staged.contains_key(&m.id) {
                 self.storage.path(&m.storage_path)?;
@@ -101,7 +104,7 @@ impl EditorialRepository {
         let mut installed = Vec::new();
         let result = (|| -> Result<(), AppError> {
             if let Some(version) = input.expected_version {
-                let changed = transaction.execute("UPDATE publications SET title=?1,caption=?2,search_text=?3,format=?4,version=version+1,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=?5 AND version=?6 AND source='manual' AND editorial_status='draft' AND deleted_at IS NULL", params![input.title.trim(), input.caption, normalized(&format!("{} {}", input.title, input.caption)), input.format.as_str(), id, version])?;
+                let changed = transaction.execute("UPDATE publications SET title=?1,caption=?2,search_text=?3,format=?4,version=version+1,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=?5 AND version=?6 AND ((source='manual' AND editorial_status='draft') OR (source='trello' AND editorial_status='pending_review')) AND deleted_at IS NULL", params![input.title.trim(), input.caption, normalized(&format!("{} {}", input.title, input.caption)), input.format.as_str(), id, version])?;
                 if changed != 1 {
                     return Err(AppError::conflict());
                 }
@@ -161,21 +164,29 @@ impl EditorialRepository {
 
     pub fn duplicate(&mut self, id: &str) -> Result<Publication, AppError> {
         let original = self.get(id)?;
+        for media in &original.media {
+            self.storage.path(&media.storage_path)?;
+        }
         let title: String = original.title.chars().take(190).collect();
-        let format = match original.format.as_str() {
-            "feed" => PublicationFormat::Feed,
-            "carousel" => PublicationFormat::Carousel,
-            "reels" => PublicationFormat::Reels,
-            _ => PublicationFormat::Stories,
-        };
-        self.save(SavePublication {
-            id: None,
-            expected_version: None,
-            title: format!("{title} (cópia)"),
-            caption: original.caption,
-            format,
-            media_ids: original.media.into_iter().map(|m| m.id).collect(),
-        })
+        let copy_id = Uuid::new_v4().to_string();
+        let title = format!("{title} (cópia)");
+        let transaction = self
+            .database
+            .connection
+            .transaction_with_behavior(TransactionBehavior::Immediate)?;
+        transaction.execute(
+            "INSERT INTO publications(id,title,caption,search_text,format) VALUES(?1,?2,?3,?4,?5)",
+            params![
+                copy_id,
+                title,
+                original.caption,
+                normalized(&format!("{} {}", title, original.caption)),
+                original.format
+            ],
+        )?;
+        transaction.execute("INSERT INTO publication_media(publication_id,media_asset_id,sort_order) SELECT ?1,media_asset_id,sort_order FROM publication_media WHERE publication_id=?2",params![copy_id,id])?;
+        transaction.commit()?;
+        self.get(&copy_id)
     }
 
     pub fn delete(&mut self, id: &str, version: u32) -> Result<(), AppError> {

@@ -1,6 +1,6 @@
 # Modelo de dados
 
-O [Projeto mestre](PROJETO_MESTRE.md#4-modelo-de-dados-planejado) define os contratos oficiais. Fase 01: histórico/preferências. Migração incremental 002 da Fase 03: publicações, mídias e vínculos ordenados. Detalhes operacionais em [Fase 03](FASE_03_BIBLIOTECA_EDITORIAL.md).
+O [Projeto mestre](PROJETO_MESTRE.md#4-modelo-de-dados-planejado) define os contratos oficiais. Fase 01: histórico/preferências. Migração incremental 002 da Fase 03: publicações, mídias e vínculos ordenados. A migração 003 da Fase 04 acrescenta origens Trello, anexos e jobs, sem alterar as migrações anteriores.
 
 ## Esquema implementado
 
@@ -25,7 +25,7 @@ A UI apenas lê essa preferência. Não há endpoint de alteração, token, cred
 
 UUID gerado no Rust; title obrigatório, 1–200 caracteres; caption até 20.000 caracteres, Unicode e quebras de linha preservados; search_text normalizado sem acentos para busca parcial; format (`feed`, `carousel`, `reels`, `stories`); source (`manual`, `trello`); editorial_status no eixo oficial; version positiva; created_at/updated_at UTC e deleted_at opcional.
 
-Somente source manual e estado draft são criados/editados na Fase 03. Duplicar gera novo UUID, título de cópia e draft. Edição incrementa versão com checagem da versão anterior. Exclusão lógica mantém o registro/vínculos e retira a publicação das consultas ativas. FKs de origem Trello pertencem à migração futura da Fase 04; nenhuma tabela Trello foi criada antecipadamente.
+Somente source manual e estado draft são criados/editados na Fase 03. Duplicar gera novo UUID, título de cópia e draft. Edição incrementa versão com checagem da versão anterior. Exclusão lógica mantém o registro/vínculos e retira a publicação das consultas ativas. Na Fase 04, importação cria source trello e estado pending_review, editável sem transição de estado; importações subsequentes preservam a Publication. imported_cards.publication_id é FK UNIQUE para a publicação inicial. Duplicar cria manual/draft independente, inclusive para cartão textual sem mídia; a cópia manual precisará de mídia válida para salvar uma edição posterior.
 
 Índices parciais por criação, última edição e formato/origem/estado, excluindo deleted_at preenchido. Consultas limitadas/paginadas não retornam todas as mídias; listagem inclui somente asset principal e quantidade.
 
@@ -43,14 +43,14 @@ publication_id FK com ON DELETE CASCADE; media_asset_id FK com ON DELETE RESTRIC
 
 ## Evolução planejada — sem antecipar migrações futuras
 
-Publication, MediaAsset, PublicationMedia e AppSettings já existem. A tabela abaixo registra suas extensões futuras e as entidades ainda ausentes: TrelloBoard, ImportedCard, EditorialReview, Schedule e PublicationEvent. O diagrama representa o modelo completo planejado.
+Publication, MediaAsset, PublicationMedia, AppSettings, TrelloBoard e ImportedCard já existem. EditorialReview, Schedule e PublicationEvent continuam futuros. A tabela e o diagrama representam o modelo completo planejado; variantes de um mesmo cartão exigirão evolução explícita do vínculo inicial 1:1 implementado.
 
 | Entidade | Identidade e relações | Dados principais / proteção |
 | --- | --- | --- |
 | TrelloBoard | UUID local; external_board_id UNIQUE | URL canônica, nome, sincronização; nenhum token |
 | ImportedCard | UUID, external_card_id UNIQUE, board_id FK | Snapshot do texto de origem, hash, timestamps, remoção lógica de origem |
 | MediaAsset | UUID, chave de anexo externo única quando aplicável | MIME, bytes, hash, caminho relativo, estado do download; nunca aceitar caminho arbitrário |
-| Publication | UUID, imported_card_id FK opcional | Conteúdo editável e versão; publicação manual não exige origem |
+| Publication | UUID; vínculo inicial via imported_cards.publication_id UNIQUE | Conteúdo editável e versão; publicação manual não exige origem |
 | PublicationMedia | Associação já implementada | Preservar UNIQUE do par e UNIQUE(publication_id, sort_order); ordenação não negativa |
 | EditorialReview | UUID, publication_id FK | Decisão imutável, versão revisada, motivo e transição |
 | Schedule | UUID, publication_id FK | Conteúdo/versionamento, horário UTC, fuso IANA, modo, estado e prova externa; só um ativo por publicação |
@@ -73,7 +73,7 @@ erDiagram
 
 ## Estados e consistência
 
-Não implementar um único enum que misture aprovação, intenção local e prova externa. Os três eixos e transições oficiais estão no mestre: editorial (`draft`, `pending_review`, `editing`, `approved`, `ignored`, `ready_to_schedule`); agendamento (`local`, `submitting`, `submitted`, `confirmed`, `failed`, `unknown`); publicação real (`not_published`, `published`). Na Fase 03 somente draft → draft com versão incrementada está implementado; não existe aprovação/agendamento/publicação.
+Não implementar um único enum que misture aprovação, intenção local e prova externa. Os três eixos e transições oficiais estão no mestre: editorial (`draft`, `pending_review`, `editing`, `approved`, `ignored`, `ready_to_schedule`); agendamento (`local`, `submitting`, `submitted`, `confirmed`, `failed`, `unknown`); publicação real (`not_published`, `published`). Fase 03 implementa draft → draft; Fase 04 acrescenta criação/edição de trello/pending_review mantendo o estado. Não existe aprovação/agendamento/publicação.
 
 Edição incrementa versão e invalida prontidão. Um Schedule referencia a versão do conteúdo, impedindo que uma edição posterior pareça ter sido enviada. Antes de reenviar um resultado incerto, reconciliar usando IDs externos/idempotência. Nenhum estado confirmado nasce de um clique de preparação local.
 
@@ -81,4 +81,19 @@ Edição incrementa versão e invalida prontidão. Um Schedule referencia a vers
 
 Identificar cartões e anexos por IDs externos; títulos não são chaves. Upsert transacional atualiza apenas snapshots da origem. Mudanças sinalizam revisão sem sobrescrever legenda/mídias organizadas pelo usuário. Downloads usam arquivo temporário, limites e conclusão atômica antes do estado disponível. Não excluir publicação porque o cartão desapareceu da origem.
 
-Índices, foreign keys e retenção das três entidades editoriais acima estão implementados na migração 002. Entidades e contratos restantes continuam planejados para as fases próprias; não representam funcionalidades concluídas.
+Índices, foreign keys e retenção editorial estão implementados nas migrações 002/003. Revisão, agendamento e evidências externas continuam planejados para as fases próprias.
+
+## Origem Trello — migração 003
+
+| Tabela | Contrato implementado |
+| --- | --- |
+| trello_boards | UUID local, remote_id UNIQUE, nome, URL canônica, created_at e last_synced_at opcional. Sem credenciais. |
+| imported_cards | UUID, remote_id UNIQUE, board_id FK, publication_id FK UNIQUE, título/descrição originais completos, lista, metadata_json, hash SHA-256, data de atividade e última sincronização. Flags booleanas source_changed, source_missing e needs_adjustment. |
+| trello_attachments | remote_id PK, imported_card_id FK, nome/MIME/URL sanitizada, media_asset_id FK opcional, download_status available/failed/reference/unsupported, erro redigido e removed booleano. |
+| import_jobs | UUID e board_id FK, status running/completed/partial/cancelled/interrupted/failed, total/processados/sucessos/falhas, novas publicações, origens alteradas, downloads/falhas de anexo, mensagem redigida, início/fim UTC. |
+
+Índices por quadro, cartão e início do job. IDs externos nunca são títulos nem UUIDs locais. Snapshot JSON mantém etiquetas, posição, datas, lista/arquivamento e metadados de anexos; URLs removem query/fragmento. IDs são validados antes de formar endpoints. Datas Trello não criam Schedule.
+
+Upsert é transacional por cartão. A primeira importação cria uma única publicação pendente; as demais atualizam somente a origem. Remoção de anexo/cartão marca flags e conserva arquivos/publicações. source_changed permanece sinalizado, sem aceite automático. Erro de anexo conserva vínculo de mídia anterior, se houver. Falha do cartão não invalida cartões já concluídos.
+
+A data do quadro avança ao concluir a seleção confirmada sem falhas; não implica que todos os cartões do quadro foram selecionados. Falhas de cartão têm contagem e mensagem final; não existe tabela de eventos por tentativa/cartão. Jobs guardam os resultados da operação, não um log de payloads. Conta/chave/token não pertencem ao modelo SQLite.

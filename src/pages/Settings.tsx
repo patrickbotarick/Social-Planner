@@ -1,3 +1,4 @@
+import { TrelloSettings } from '../features/editorial/TrelloSettings';
 import { StorageStatus } from '../components/StorageStatus';
 import { PageHeader } from '../components/PageHeader';
 import { Tabs } from '../components/ui/Tabs';
@@ -15,8 +16,8 @@ export function Settings({ state, onRefresh }: { state: FoundationState; onRefre
         <Card><div className="card-heading"><h2>Sobre o aplicativo</h2></div><div className="card-body"><dl className="details"><div><dt>Produto</dt><dd>GMAD Social Planner</dd></div><div><dt>Unidade</dt><dd>GMAD Rio Preto</dd></div><div><dt>Versão</dt><dd>0.1.0</dd></div></dl></div></Card>
       </div> },
       { id: 'storage', label: 'Armazenamento', content: <StorageStatus state={state} onRefresh={onRefresh} /> },
-      { id: 'integrations', label: 'Integrações', content: <Card><div className="card-heading"><h2>Conexões externas</h2><span className="small muted">Nenhuma integração ativa</span></div>{[
-        { name: 'Trello', phase: '04', description: 'Quadros, cartões e anexos da matriz.' },
+      { id: 'trello', label: 'Trello', content: <TrelloSettings /> },
+      { id: 'integrations', label: 'Integrações', content: <Card><div className="card-heading"><h2>Conexões externas</h2><span className="small muted">Outras conexões</span></div>{[
         { name: 'Meta', phase: '07', description: 'Método oficial a validar antes de conectar.' },
       ].map((item) => <div className="integration-row" key={item.name}><div><h3>{item.name} <Badge>Não configurada</Badge></h3><p>{item.description} Disponível na Fase {item.phase}.</p></div><Button disabled variant="secondary">Conectar {item.name}</Button></div>)}</Card> },
     ]} /></div>

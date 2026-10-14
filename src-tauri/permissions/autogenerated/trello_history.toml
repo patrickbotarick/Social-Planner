@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-trello-history"
+description = "Enables the trello_history command without any pre-configured scope."
+commands.allow = ["trello_history"]
+
+[[permission]]
+identifier = "deny-trello-history"
+description = "Denies the trello_history command without any pre-configured scope."
+commands.deny = ["trello_history"]

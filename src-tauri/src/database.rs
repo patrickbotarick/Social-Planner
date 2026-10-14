@@ -4,6 +4,7 @@ use serde::Serialize;
 use std::{path::Path, time::Duration};
 
 const MIGRATIONS: &[(i64, &str, &str)] = &[
+    // Migrações anteriores permanecem byte a byte no histórico.
     (
         1,
         "foundation",
@@ -13,6 +14,11 @@ const MIGRATIONS: &[(i64, &str, &str)] = &[
         2,
         "editorial_library",
         include_str!("../migrations/002_editorial_library.sql"),
+    ),
+    (
+        3,
+        "trello_import",
+        include_str!("../migrations/003_trello_import.sql"),
     ),
 ];
 
@@ -154,6 +160,39 @@ mod tests {
     use super::*;
 
     #[test]
+    fn trello_migration_preserves_editorial_data_and_prior_sql() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("phase03.sqlite3");
+        {
+            let mut connection = Connection::open(&path).unwrap();
+            migrate(&mut connection, &MIGRATIONS[..2]).unwrap();
+            connection.execute("INSERT INTO publications(id,title,caption,search_text,format,version) VALUES('existing','Manual','Preservar 😊','manual','feed',7)", []).unwrap();
+        }
+        let repository = Repository::open(&path).unwrap();
+        let preserved: (String, u32) = repository
+            .connection
+            .query_row(
+                "SELECT caption,version FROM publications WHERE id='existing'",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .unwrap();
+        assert_eq!(preserved, ("Preservar 😊".into(), 7));
+        for (version, _, sql) in &MIGRATIONS[..2] {
+            let applied: String = repository
+                .connection
+                .query_row(
+                    "SELECT source_sql FROM schema_migrations WHERE version=?1",
+                    [version],
+                    |r| r.get(0),
+                )
+                .unwrap();
+            assert_eq!(&applied, sql);
+        }
+        assert_eq!(repository.status().unwrap().schema_version, 3);
+    }
+
+    #[test]
     fn incremental_editorial_migration_preserves_existing_foundation() {
         let directory = tempfile::tempdir().unwrap();
         let path = directory.path().join("previous.sqlite3");
@@ -171,7 +210,7 @@ mod tests {
                 .unwrap();
         }
         let repository = Repository::open(&path).unwrap();
-        assert_eq!(repository.status().unwrap().schema_version, 2);
+        assert_eq!(repository.status().unwrap().schema_version, 3);
         assert_eq!(repository.settings().unwrap().timezone, "UTC");
         assert_eq!(repository.settings().unwrap().created_at, created);
         assert_eq!(
@@ -201,7 +240,7 @@ mod tests {
         let path = directory.path().join("test.sqlite3");
         {
             let repository = Repository::open(&path).unwrap();
-            assert_eq!(repository.status().unwrap().schema_version, 2);
+            assert_eq!(repository.status().unwrap().schema_version, 3);
             assert_eq!(repository.settings().unwrap().timezone, "America/Sao_Paulo");
             // Exercita persistência sem expor edição de configurações no IPC desta fase.
             repository
@@ -220,7 +259,7 @@ mod tests {
                 row.get(0)
             })
             .unwrap();
-        assert_eq!(count, 2);
+        assert_eq!(count, 3);
     }
 
     #[test]

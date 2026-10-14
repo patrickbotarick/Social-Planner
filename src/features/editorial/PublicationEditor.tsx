@@ -1,3 +1,4 @@
+import { TrelloSource } from './TrelloSource';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PageHeader } from '../../components/PageHeader';
 import { Button, IconButton } from '../../components/ui/Button';
@@ -14,10 +15,11 @@ interface Props { id?: string; onSaved: (publication: Publication) => void; onCa
 interface Draft { title: string; caption: string; format: PublicationFormat; media: MediaAsset[] }
 const empty: Draft = { title: '', caption: '', format: 'feed', media: [] };
 const signature = (draft: Draft) => JSON.stringify([draft.title,draft.caption,draft.format,draft.media.map(m => m.id)]);
-function validation(draft: Draft): string | null {
+function validation(draft: Draft, allowEmpty = false): string | null {
   if (!draft.title.trim() || [...draft.title].length > 200) return 'Informe um título interno de até 200 caracteres.';
   if ([...draft.caption].length > 20000) return 'A legenda deve ter até 20.000 caracteres.';
   const count = draft.media.length;
+  if (allowEmpty && count === 0) return null;
   if (draft.format === 'carousel' ? count < 2 || count > 20 : count !== 1) return draft.format === 'carousel' ? 'Selecione de 2 a 20 mídias para o carrossel.' : 'Selecione uma mídia para este formato.';
   if (draft.format === 'feed' && draft.media.some(m => !m.mimeType.startsWith('image/'))) return 'Feed aceita uma imagem.';
   if (draft.format === 'reels' && draft.media.some(m => !m.mimeType.startsWith('video/'))) return 'Reels aceita um vídeo MP4.';
@@ -60,14 +62,15 @@ export function PublicationEditor({ id, onSaved, onCancel, onGuard }: Props) {
   };
   const reorder = (index: number, delta: number) => { setDraft(current => { const media = [...current.media]; const item = media[index]; if (item) { media.splice(index,1); media.splice(index+delta,0,item); } return { ...current, media }; }); };
   const save = async () => {
-    const message = validation(draft); if (message) { setError(message); return; }
+    const message = validation(draft, loaded?.source === 'trello'); if (message) { setError(message); return; }
     setBusy(true); setError(null);
     try { const publication = await savePublication({ id: loaded?.id ?? null, expectedVersion: loaded?.version ?? null, title: draft.title, caption: draft.caption, format: draft.format, mediaIds: draft.media.map(m => m.id) }); onGuard(null); setBaseline(signature(draft)); notify(loaded ? 'Alterações salvas.' : 'Publicação criada.'); onSaved(publication); }
     catch (e) { setError(editorialError(e)); } finally { setBusy(false); }
   };
-  return <><PageHeader title={id ? 'Editar publicação' : 'Nova publicação'} description="Prepare o conteúdo da unidade. O salvamento permanece neste computador." actions={<div className="page-actions"><Badge>{dirty ? 'Alterações não salvas' : loaded ? 'Rascunho salvo' : 'Rascunho'}</Badge><Button variant="secondary" onClick={onCancel} disabled={busy || loading}>Cancelar</Button><Button onClick={() => { void save(); }} disabled={!native || busy || loading || !!id && !loaded}>{busy ? 'Processando…' : 'Salvar publicação'}</Button></div>} />
+  return <><PageHeader title={id ? 'Editar publicação' : 'Nova publicação'} description="Prepare o conteúdo da unidade. O salvamento permanece neste computador." actions={<div className="page-actions"><Badge>{dirty ? 'Alterações não salvas' : loaded ? loaded.source === 'trello' ? 'Pendente de revisão' : 'Rascunho salvo' : 'Rascunho'}</Badge><Button variant="secondary" onClick={onCancel} disabled={busy || loading}>Cancelar</Button><Button onClick={() => { void save(); }} disabled={!native || busy || loading || !!id && !loaded}>{busy ? 'Processando…' : 'Salvar publicação'}</Button></div>} />
     {!native && <p role="status" className="editorial-notice">Abra a janela desktop para cadastrar e armazenar publicações. Esta prévia não simula persistência.</p>}
     {loading ? <p role="status">Carregando publicação…</p> : id && !loaded ? <Card><div className="card-body"><p role="alert">{error ?? 'Publicação indisponível.'}</p><Button variant="secondary" onClick={() => { void load(); }}>Tentar novamente</Button></div></Card> : <>
+      {loaded?.source === 'trello' && <TrelloSource id={loaded.id} disabled={busy} onAdd={media => { if (draft.media.some(m => m.checksum === media.checksum)) { setError('Esta mídia já está na composição.'); return; } setDraft(current => ({ ...current, media: [...current.media, media] })); }} />}
       {error && <p role="alert" className="editorial-error">{error}</p>}
       {issues.length > 0 && <div role="alert" className="editorial-error"><p>Alguns arquivos não foram adicionados:</p><ul>{issues.map((issue,i) => <li key={i}>{issue}</li>)}</ul></div>}
       <div className="split-editor publication-editor"><Card><div className="card-heading"><h2>Mídias da publicação</h2><span className="small muted">{draft.media.length} {draft.media.length === 1 ? 'arquivo' : 'arquivos'}</span></div><div className="card-body">

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-trello-cancel"
+description = "Enables the trello_cancel command without any pre-configured scope."
+commands.allow = ["trello_cancel"]
+
+[[permission]]
+identifier = "deny-trello-cancel"
+description = "Denies the trello_cancel command without any pre-configured scope."
+commands.deny = ["trello_cancel"]

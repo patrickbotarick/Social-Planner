@@ -2,7 +2,7 @@
 
 Aplicativo Windows local-first para organizar o conteúdo editorial de Instagram da GMAD Rio Preto, recebido mensalmente do Trello da matriz.
 
-**Estado:** Fases 01 e 02 validadas tecnicamente neste Windows. A Fase 03 implementa biblioteca local: cadastro manual, imagens/vídeos, detalhes, edição, duplicação, exclusão lógica, busca, filtros e contagens reais. São 53 testes automatizados aprovados; o estado do aceite desktop está registrado na [Fase 03](docs/FASE_03_BIBLIOTECA_EDITORIAL.md). Trello, revisão completa, planejamento persistente e Meta permanecem nas fases futuras. O calendário apenas navega visualmente entre meses. Nenhuma publicação externa é executada.
+**Estado:** Fases 01–03 validadas. A Fase 04 implementa conexão Trello protegida no Windows, prévia/seleção de cartões, importação de textos e mídias e sincronização que preserva edições locais. Validação automatizada e desktop local registrada na [Fase 04](docs/FASE_04_INTEGRACAO_TRELLO.md); autorização e importação do quadro real permanecem pendentes. Revisão completa, calendário persistente e Meta continuam nas fases 05–09. Nenhuma publicação externa é executada.
 
 ## Pré-requisitos
 
@@ -80,9 +80,13 @@ Na janela: conferir “Armazenamento conectado” na Topbar e o diagnóstico com
 
 Banco resolvido via Tauri `app_data_dir()`, normalmente `%APPDATA%\br.com.gmad.socialplanner\planner.sqlite3`. A UI mostra o caminho real. Migração incremental 002 acrescenta publicações, assets e vínculos ordenados, preservando histórico e preferências. Mídias importadas pelo operador ficam em `media/<sha256>.<extensão>` nessa raiz; staging usa `temp/imports/<sessão>`. Originais não são alterados. Nenhum conteúdo de demonstração ou token é inserido na base operacional.
 
-Frontend chama comandos IPC específicos de diagnóstico e biblioteca. SQLite, seleção nativa, validação e cópia de arquivos pertencem ao Rust. Prévia de mídia usa protocolo asset limitado aos diretórios controlados. Não há SQL ou filesystem arbitrário, login interno, backend remoto ou serviços pagos. Exclusão é lógica e preserva arquivos compartilhados; não existe limpeza física automática. Segredos futuros devem usar o cofre do Windows. Backup ainda é planejamento documentado.
+Frontend chama comandos IPC específicos de diagnóstico, biblioteca e Trello. SQLite, seleção nativa, validação e cópia de arquivos pertencem ao Rust. Prévia de mídia usa protocolo asset limitado aos diretórios controlados. Não há SQL ou filesystem arbitrário, login interno, backend remoto ou serviços pagos. Exclusão é lógica e preserva arquivos compartilhados; não existe limpeza física automática. As credenciais Trello usam o cofre do Windows, com acesso exclusivo pelo Rust. Backup ainda é planejamento documentado.
 
 Para cadastrar: Criar publicação → título, formato e legenda → Selecionar mídias → Salvar publicação. Feed aceita uma imagem; carrossel aceita 2–20 mídias ordenadas; Reels aceita um MP4; Stories aceita uma imagem ou MP4. Imagens JPEG/PNG/WebP até 64 MiB e vídeos MP4 até 512 MiB, sujeitos à validação do conteúdo. Reprodução depende do codec disponível no WebView2, sem transcodificação. Legendas preservam emojis e quebras de linha; alterações não salvas têm guarda de saída.
+
+## Importar do Trello
+
+Configure a conexão em Configurações → Trello seguindo o [guia de integração](docs/INTEGRACAO_TRELLO.md). Depois abra Importações, consulte a URL do quadro, confira a prévia/seleção e confirme. Os posts chegam como pendentes de revisão. Reimportar atualiza a origem separadamente, preservando o conteúdo local. Downloads que falham podem ser repetidos; anexos recuperados/novos ficam disponíveis em Origem Trello para inclusão explícita na composição. Não envie tokens pelo chat ou grave-os em arquivos.
 
 ## Organização
 
@@ -96,10 +100,10 @@ src/
   features/editorial/    editor e prévias de mídia
   hooks/                 consultas de diagnóstico e biblioteca
   layouts/               moldura responsiva, CSS Modules
-  pages/                 biblioteca, detalhes, cadastro e layouts futuros
+  pages/                 biblioteca, importações, detalhes, cadastro e layouts futuros
   services/              ponte IPC tipada
   styles/                tokens e estilos comuns
-  types/                 contratos da fundação e biblioteca
+  types/                 contratos da fundação, biblioteca e Trello
   utils/                 cálculo visual do calendário e fuso
 src-tauri/
   capabilities/          permissões mínimas
@@ -123,6 +127,8 @@ Diretrizes visuais e contratos dos componentes em [Design system](docs/DESIGN_SY
 - [Design system](docs/DESIGN_SYSTEM.md).
 - [Identidade e interface — Fase 02](docs/FASE_02_IDENTIDADE_INTERFACE.md).
 - [Biblioteca editorial — Fase 03](docs/FASE_03_BIBLIOTECA_EDITORIAL.md).
+- [Integração Trello — configuração e limites](docs/INTEGRACAO_TRELLO.md).
+- [Entrega e validação da Fase 04](docs/FASE_04_INTEGRACAO_TRELLO.md).
 - [Instruções persistentes para agentes](AGENTS.md).
 
-Não avançar automaticamente para a Fase 04. Não executar publicação externa sem autorização explícita. Git ignora dependências, builds, bancos operacionais, mídias e segredos; não há push automático.
+Não avançar automaticamente para a Fase 05. Não executar publicação externa sem autorização explícita. Git ignora dependências, builds, bancos operacionais, mídias e segredos; não há push automático.

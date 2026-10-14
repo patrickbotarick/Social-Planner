@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-trello-import"
+description = "Enables the trello_import command without any pre-configured scope."
+commands.allow = ["trello_import"]
+
+[[permission]]
+identifier = "deny-trello-import"
+description = "Denies the trello_import command without any pre-configured scope."
+commands.deny = ["trello_import"]

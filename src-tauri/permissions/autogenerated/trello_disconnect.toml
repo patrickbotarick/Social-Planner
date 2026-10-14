@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-trello-disconnect"
+description = "Enables the trello_disconnect command without any pre-configured scope."
+commands.allow = ["trello_disconnect"]
+
+[[permission]]
+identifier = "deny-trello-disconnect"
+description = "Denies the trello_disconnect command without any pre-configured scope."
+commands.deny = ["trello_disconnect"]

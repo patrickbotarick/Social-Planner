@@ -31,3 +31,16 @@
 .page-header h1 { overflow-wrap: anywhere; }
 @media (max-width: 900px) { .summary-row--library { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media (max-width: 600px) { .summary-row--library { grid-template-columns: 1fr; } .editorial-publication-grid { grid-template-columns: minmax(0,1fr); } .library-pagination { flex-wrap: wrap; justify-content: flex-start; } }
+.trello-query { display: flex; gap: var(--space-3); align-items: end; flex-wrap: wrap; }
+.trello-query .field { flex: 1; min-width: 240px; }
+.trello-filters { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+.trello-filters .field { flex: 1; min-width: 160px; }
+.trello-card-list { max-height: 520px; overflow: auto; border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.trello-card-row { display: grid; grid-template-columns: 24px minmax(0,1fr) auto; gap: var(--space-3); padding: var(--space-4); border-bottom: 1px solid var(--color-border); align-items: start; }
+.trello-card-row input { width: 18px; height: 18px; accent-color: var(--color-primary); }
+.trello-card-row h3, .trello-card-row p { overflow-wrap: anywhere; }
+.trello-references { display: grid; gap: var(--space-4); padding-left: var(--space-4); }
+.trello-references .editorial-media-preview { max-width: 240px; }
+progress { width: 100%; accent-color: var(--color-primary); }
+summary { cursor: pointer; padding-block: var(--space-2); }
+@media (max-width: 900px) { .trello-card-row { grid-template-columns: 24px minmax(0,1fr); } .trello-card-row > :last-child { grid-column: 2; } }

@@ -2,6 +2,31 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main",
   "description": "Diagnóstico e operações editoriais específicas na janela principal, sem acesso genérico a arquivos ou SQL.",
-  "windows": ["main"],
-  "permissions": ["allow-foundation-status", "allow-publication-list", "allow-publication-get", "allow-publication-save", "allow-publication-duplicate", "allow-publication-delete", "allow-editorial-counts", "allow-media-select", "allow-media-discard", "core:event:allow-listen", "core:event:allow-unlisten", "core:window:allow-destroy"]
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "allow-foundation-status",
+    "allow-publication-list",
+    "allow-publication-get",
+    "allow-publication-save",
+    "allow-publication-duplicate",
+    "allow-publication-delete",
+    "allow-editorial-counts",
+    "allow-media-select",
+    "allow-media-discard",
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:window:allow-destroy",
+    "allow-trello-status",
+    "allow-trello-connect",
+    "allow-trello-test",
+    "allow-trello-disconnect",
+    "allow-trello-authorization-url",
+    "allow-trello-preview",
+    "allow-trello-history",
+    "allow-trello-source",
+    "allow-trello-cancel",
+    "allow-trello-import"
+  ]
 }

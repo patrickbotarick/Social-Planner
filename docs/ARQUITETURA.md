@@ -9,6 +9,10 @@ flowchart LR
   UI[React / TypeScript] --> Service[Serviço desktop tipado]
   Service -->|comandos específicos| IPC[Tauri / permissões da janela main]
   IPC --> Repo[Repositório Rust / Mutex]
+  IPC --> Worker[Worker Trello Rust]
+  Worker --> Vault[Windows Credential Manager]
+  Worker -->|HTTPS GET| Trello[API oficial Trello]
+  Worker --> Repo
   Repo --> DB[(SQLite local)]
   Repo --> Migration[Migrações SQL versionadas]
   Repo --> Media[Armazenamento de mídia Rust / SHA-256]
@@ -49,9 +53,9 @@ Falhas: `{ code, message }` com códigos `DATABASE_UNAVAILABLE`, `DATABASE_INTEG
 
 ## Segurança
 
-`build.rs` declara os comandos de aplicação no manifesto; a capability `main` concede diagnóstico e oito comandos editoriais específicos, além de listen/unlisten de eventos e destroy para guarda de fechamento. Não há permissões genéricas para origens remotas, SQL, filesystem, shell ou HTTP. O seletor oficial dialog é chamado apenas pelo Rust. Protocolo asset inicia com escopo vazio e libera somente mídia/staging controlados; CSP permite esses ativos locais em img-src/media-src. Desenvolvimento adiciona Vite/HMR em loopback. Recursos externos não são carregados pela UI.
+`build.rs` declara os comandos de aplicação no manifesto; a capability `main` concede diagnóstico, oito comandos editoriais e dez comandos Trello específicos, além de listen/unlisten de eventos e destroy para guarda de fechamento. Não há permissões genéricas para origens remotas, SQL, filesystem, shell ou HTTP. O seletor oficial dialog é chamado apenas pelo Rust. Protocolo asset inicia com escopo vazio e libera somente mídia/staging controlados; CSP permite esses ativos locais em img-src/media-src. Desenvolvimento adiciona Vite/HMR em loopback. Recursos externos não são carregados pela UI.
 
-Credenciais e integração serão responsabilidade do Rust nas fases próprias. O SQLite editorial não é um cofre de segredos; arquivos locais herdam proteção do perfil Windows e não são criptografados por este aplicativo nesta fase. Guardar tokens no armazenamento seguro do sistema operacional quando existir autorização externa.
+Credenciais e integração Trello são responsabilidade do Rust. O SQLite editorial não é um cofre de segredos; arquivos locais herdam proteção do perfil Windows e não são criptografados por este aplicativo nesta fase. O token Trello fica exclusivamente no Windows Credential Manager; o frontend só recebe a entrada transitória do formulário e a limpa ao enviar.
 
 ## Desenvolvimento e operação
 
@@ -80,3 +84,15 @@ Migração 002 cria publications, media_assets e publication_media. Save é tran
 Mídias em `media/<sha256>.<extensão>`, staging em `temp/imports/<sessão>`, sob a raiz Tauri. Importação copia em blocos, valida conteúdo e limites, sem transformar bytes ou carregar vídeos inteiros. Promoção usa hard link atômico ou fallback de cópia sincronizada/rename. Falha anterior ao commit reverte banco e somente arquivos novos; resultado incerto conserva arquivos. Não existe limpeza destrutiva automática. Detalhes, limites e contratos em [Fase 03](FASE_03_BIBLIOTECA_EDITORIAL.md).
 
 `GMAD_QA_DATA_DIR`, absoluto e opt-in, permite perfil isolado exclusivamente em debug. Release ignora a variável e mantém o diretório operacional do Tauri. Testes Rust usam bancos/arquivos temporários; testes de componentes simulam somente sua fronteira IPC.
+
+## Integração Trello da Fase 04
+
+Os módulos trello_domain, trello_api, trello_vault, trello_service e trello_repository separam DTOs/validação, transporte oficial, credenciais, coordenação e SQLite. reqwest blocking com rustls atende somente endpoints construídos para api.trello.com por HTTPS; não há cliente HTTP no frontend. URLs de referência não são destinos de download. O transporte é substituível exclusivamente nos testes offline.
+
+TrelloState serializa operações, mantém a prévia em memória por 15 minutos, cancelamento atômico e progresso consultável. Comandos usam spawn_blocking. Rede, download e inspeção de arquivos ocorrem fora do mutex editorial; o checksum é reconferido dentro da transação por cartão antes de criar vínculos, protegendo contra arquivos modificados/revertidos por outra operação. Essa leitura de disco pode bloquear brevemente consultas locais, especialmente com vídeos grandes.
+
+A migração 003 é aditiva e mantém 001/002 intactas. Snapshot remoto e Publication são independentes; reimportação nunca sobrescreve composição/estado/versão editorial. Arquivos completos promovidos são conservados em falhas posteriores; temporários conhecidos são removidos. Jobs interrompidos são identificados ao abrir o aplicativo. Não existe limpeza destrutiva de arquivos órfãos.
+
+Configurações → Trello usa autorização pessoal oficial somente leitura e cofre nativo; Importações oferece prévia, confirmação, limites, progresso, cancelamento e histórico. Detalhes/editor mostram origem e anexos; anexos novos entram na composição somente por ação explícita. O cadastro manual permanece independente. Aprovação completa e calendário não foram implementados.
+
+Contratos, fontes oficiais e limitações: [Integração Trello](INTEGRACAO_TRELLO.md). Evidências e distinção entre mocks e serviço real: [Fase 04](FASE_04_INTEGRACAO_TRELLO.md).

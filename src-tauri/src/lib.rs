@@ -1,3 +1,11 @@
+mod trello_api;
+mod trello_domain;
+mod trello_repository;
+mod trello_service;
+#[cfg(test)]
+mod trello_tests;
+mod trello_vault;
+use trello_service::*;
 mod database;
 mod editorial_domain;
 mod editorial_repository;
@@ -162,6 +170,7 @@ pub fn run() {
                 }
                 std::fs::create_dir_all(&data_dir).map_err(|_| AppError::database())?;
                 let repository = EditorialRepository::open(&data_dir)?;
+                repository.trello_recover()?;
                 app.asset_protocol_scope()
                     .allow_directory(&repository.storage.directory, false)
                     .map_err(|_| AppError::file())?;
@@ -176,6 +185,7 @@ pub fn run() {
             }
             // A janela permanece disponível para mostrar o erro, sem resetar dados.
             app.manage(DatabaseState(Mutex::new(database)));
+            app.manage(TrelloState::default());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -187,7 +197,17 @@ pub fn run() {
             publication_delete,
             editorial_counts,
             media_select,
-            media_discard
+            media_discard,
+            trello_status,
+            trello_connect,
+            trello_test,
+            trello_disconnect,
+            trello_authorization_url,
+            trello_preview,
+            trello_history,
+            trello_source,
+            trello_cancel,
+            trello_import,
         ])
         .run(tauri::generate_context!())
         .expect("Não foi possível iniciar a janela desktop do GMAD Social Planner");
