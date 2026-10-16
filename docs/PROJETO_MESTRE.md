@@ -78,6 +78,8 @@ Fluxo assistido registra intenção local e ação humana; abrir Business Suite 
 
 ## 6. Interface
 
+Na Fase 04.5C, detalhes e origem Trello receberam apresentação limitada de negrito e escapes comuns, sem interpretar HTML ou alterar o texto armazenado. O editor mantém a string integral; os botões de cópia distinguem legenda editorial e descrição original. Vídeo isolado, três imagens e composição mista reais foram importados mediante confirmação, exibidos/reproduzidos e sincronizados novamente sem duplicações. A conferência final após reabertura está em andamento; evidências em FASE_04_5_HOMOLOGACAO_TRELLO.md.
+
 Dashboard consulta contagens reais de publicações ativas: total, rascunhos, pendentes e aprovadas; próximas publicações continuam vazias porque planejamento não foi implementado. Menu: Dashboard, Biblioteca editorial, Importações Trello, Revisão de publicações, Calendário mensal, Nova publicação, Histórico e Configurações. Biblioteca e cadastro manual têm operações locais; detalhes/edição usam subrotas de hash com UUID. Importações consulta/seleciona/importa/sincroniza; Configurações → Trello gerencia a conexão. Áreas das fases 05–09 informam fase prevista e ações desabilitadas. Preferências continuam em modo leitura.
 
 Verde profundo, branco, cinza e detalhe laranja formam a identidade do software consolidada na Fase 02, documentada em DESIGN_SYSTEM.md, sem afirmar códigos oficiais da marca. Inter local licenciada, layout adaptável, foco visível, links semânticos, títulos e estados acessíveis. Nenhum dado demonstrativo deve se passar por dado real.

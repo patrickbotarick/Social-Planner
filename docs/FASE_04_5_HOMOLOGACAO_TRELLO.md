@@ -1,5 +1,7 @@
 # Fase 04.5 — Homologação real do Trello
 
+Estado mais recente — 04.5C: importação autorizada de dois vídeos e quatro imagens, prévias, reprodução, sincronização repetida e melhoria de legenda aprovadas. **Aceite final aguardando apenas a conferência após reabertura no contexto operacional.** O usuário foi solicitado a reabrir o executável; o aplicativo continua fechado na última inspeção. A seção 04.5B abaixo preserva o registro histórico.
+
 Atualização: 16/10/2026, correção 04.5B. **Concluída: publicação operacional recuperada, imagem exibida, segunda sincronização sem duplicação e persistência após reabertura confirmada.** A importação real de imagem e a recuperação deste cartão estão homologadas. Esta etapa não inicia a Fase 05; vídeo e múltiplas mídias reais permanecem pendências da homologação ampliada da Fase 04.
 
 ## Diagnóstico confirmado
@@ -81,6 +83,74 @@ O aplicativo foi fechado normalmente e reaberto pelo usuário no mesmo contexto 
 
 Critérios da Fase 04.5B atendidos. Commit desta entrega: `fix: support secure Trello attachment redirects` (consultar histórico Git). Somente código, testes e documentação são versionados; snapshots, dados, imagem e builds permanecem fora do Git. Sem push ou tag.
 
-## Pendências gerais da Fase 04.5
+## Pendências após a 04.5B (histórico)
 
 Vídeo e múltiplas mídias em cartões reais dependem de confirmação antes de importar cartões adicionais. Marcadores Markdown como `**` continuam exibidos literalmente; a legenda original é preservada e a apresentação será tratada futuramente, fora desta correção. A Fase 05 não foi iniciada.
+
+## Fase 04.5C — homologação ampliada (em andamento)
+
+Solicitada em 16/10/2026. Base Git limpa no commit `47d9851`. A consulta autenticada somente leitura confirmou 5 listas e 82 cartões. O diagnóstico opt-in `inspect_authorized_media_candidates` lê metadados pelo transporte de produção, não baixa anexos nem grava o banco operacional e não registra URLs assinadas. A inspeção passou (1 teste remoto). Snapshots anteriores e o snapshot de segurança desta etapa confirmaram as duas publicações e a mídia existentes integralmente preservadas.
+
+### Candidatos apresentados para confirmação
+
+| Caso | Cartão / ID remoto | Lista | Anexos suportados / tamanho informado pela API | Comportamento esperado |
+| --- | --- | --- | --- | --- |
+| Vídeo isolado | `23` / `6abccbdc77fe6c6b13ece0ac` / `HeKKJ6t0` | Sem 4 | `corte_gmad.mp4`, 46.422.938 bytes | Uma publicação com vídeo; conferir streaming, integridade e reprodução WebView2 |
+| Múltiplas imagens | `2` / `6abcc683705f9e026bc1619e` / `Sh6EV1dH` | Sem 1 | PNG + 2 JPEG, 2.655.715 bytes no total | Uma publicação com três imagens na ordem do Trello; cartão distinto do “2” recuperado na 04.5B |
+| Misto | `18` / `6abccd446e9f6ce120c3750c` / `WiHAk2RG` | Sem 3 | PNG + MP4, 4.638.807 bytes no total | Duas mídias com aviso de ajuste; nenhuma presunção de validade Instagram |
+
+IDs dos anexos na ordem retornada/sanitizada:
+
+- Vídeo: `6abccbdc77fe6c6b13ece0bb`.
+- Imagens: `6abcf4e2456d0fe1454615be`, `6abcf4f716bb9989f94216af`, `6abcf4f73147ff3809cf6d80`.
+- Misto: `6abccd446e9f6ce120c37521`, `6abccd446e9f6ce120c37523`.
+
+O usuário autorizou explicitamente os três cartões e a sincronização repetida. A seleção padrão foi zerada; cada candidato foi conferido pela lista, anexos e posteriormente pelo vínculo remoto/publicação. Nenhum outro cartão foi importado.
+
+### Resultados reais no Tauri Windows
+
+Às 16:26, a operação concluiu 3/3 cartões, **3 novas publicações, 6 anexos baixados, 0 falhas de cartão e 0 falhas de anexo**. Todos passaram pelo downloader de produção, que exige HTTP 200 após aplicar a política restrita de redirecionamentos da 04.5B, preservando TLS. Nenhum domínio adicional foi liberado. O streaming existente de 64 KiB foi utilizado; tamanho final, validação de conteúdo/estrutura e SHA-256 foram conferidos no Rust e novamente no disco. Não houve conversão automática.
+
+| Cartão | ID da publicação criada | Composição | Resultado nativo |
+| --- | --- | --- | --- |
+| `HeKKJ6t0` | `ac0d61fc-8a47-4708-a450-8672e0f71025` | 1 MP4; Reels | Vídeo renderizado e reproduzido; contador avançou até 0:13/0:58 |
+| `Sh6EV1dH` | `fdcc229f-e318-44ec-9e1e-a02b3812223a` | 3 imagens; Carrossel | PNG e os dois JPEG exibidos individualmente, na ordem 0/1/2 |
+| `WiHAk2RG` | `cc55e5b8-94cf-4b7e-b621-832811b2d01d` | PNG + MP4; Carrossel com ajuste | Capa exibida, segundo vídeo reproduzido até 0:32/1:26; aviso de ajuste preservado |
+
+“Carrossel” é intenção editorial local. A mistura PNG/MP4 exige ajuste e esta homologação não valida requisitos da API Instagram. As duas reproduções reais funcionaram neste WebView2; não se identificou incompatibilidade de codec nos arquivos selecionados. Não se afirma suporte a todos os codecs MP4 nem certificação de áudio, que foi silenciado durante a inspeção.
+
+Arquivos efetivamente baixados (53.717.460 bytes no total):
+
+| Arquivo | MIME | Bytes | Dimensões / duração |
+| --- | --- | ---: | --- |
+| `corte_gmad.mp4` | video/mp4 | 46.422.938 | 1080 × 1920; 58,585 s |
+| `Arauco_cozinhas_padrões.png` | image/png | 1.685.886 | 1122 × 1402 |
+| `04-Cozinha-Pimenta-Rosa-matt-e-dueto-Cravo-e-Ginger-scaled.jpg` | image/jpeg | 499.402 | 2560 × 1920 |
+| `01-Cozinha-Anis-Ginger-e-Cravo-imagem-01-scaled.jpg` | image/jpeg | 470.427 | 2560 × 1920 |
+| `perrengue.png` | image/png | 1.142.104 | 1080 × 1920 |
+| `snapins-ai_3430967810237650689.mp4` | video/mp4 | 3.496.703 | 360 × 640; 86,842 s |
+
+Hashes dos vídeos: `eebe7736e0c629eb7daa7f11e12f7fe752b1c26f57a332a3ad28d108a6d4498e` (isolado) e `c3b910bc2168f17c10faf06cebc6b7e1496433f8ab8eaee1cec055ade3d022e3` (misto). Todos os sete arquivos locais, incluindo a imagem preexistente, tiveram tamanho e SHA-256 comparados aos MediaAssets. Total: 5 publicações, 7 MediaAssets, 7 vínculos e 7 arquivos físicos; nenhum arquivo redundante.
+
+Às 16:30, a segunda operação selecionou somente esses três cartões, identificados pelos UUIDs criados: **3/3 processados, 0 novas publicações, 0 downloads, 0 origens alteradas, 0 falhas**. As tabelas `publications`, `media_assets` e `publication_media` ficaram integralmente idênticas ao snapshot posterior à primeira importação. Legendas, estados, versões e ordem das mídias preservados. As duas publicações anteriores e seus vínculos/asset permaneceram integralmente idênticos ao snapshot inicial. Novas publicações em `pending_review`, versão 1, com legendas iguais às descrições originais.
+
+SQLite: `quick_check=ok`; nenhuma violação em `foreign_key_check`. Snapshots e script de conferência em `.tmp`, fora do Git; nenhuma gravação SQL corretiva foi feita. O aplicativo foi fechado normalmente para conferir esses resultados após reabertura.
+
+### Apresentação da legenda
+
+Implementada apresentação limitada de `**negrito**` e escapes comuns (`\\`, `\*`, `\#`, `\_`) nos detalhes de publicações Trello e na origem. React produz somente nós de texto e `strong`; HTML, scripts e links Markdown permanecem texto inerte. Sem `dangerouslySetInnerHTML`, dependência nova ou editor Markdown. Marcadores incompletos continuam visíveis. A classe existente conserva quebras de linha e emojis.
+
+Nenhum texto persistido é reescrito. O editor continua recebendo a string integral. **Copiar legenda** copia a legenda editorial armazenada; **Copiar legenda original**, na origem Trello, copia a descrição original integral, incluindo marcadores, escapes, hashtags e quebras. Markdown completo fica fora desta etapa.
+
+### Validações desta etapa
+
+- `npm.cmd run check`: aprovado; typecheck, lint, **47 testes frontend**, **4 testes SQL**, build frontend.
+- `cargo test --manifest-path src-tauri/Cargo.toml`: **55 aprovados**, 0 falhas, 4 opt-in ignorados na suíte padrão.
+- `cargo check`, `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`: aprovados.
+- Inspeção remota opt-in: **1 aprovada**, somente metadados. Total: **106 testes locais + 1 inspeção remota = 107 aprovações**. As importações e reproduções reais acima são verificações de aceitação adicionais, não testes com fixtures nem parte dessa contagem.
+- Novas regressões: negrito/escapes, Unicode/quebras, HTML e links maliciosos inertes, delimitadores incompletos, vários trechos e cópia integral das duas versões sem gravação editorial.
+- Build desktop: aprovado (`npm.cmd run build:desktop`, release sem bundle). A primeira tentativa encontrou o executável em uso; após o usuário disponibilizar a sessão, o GMAD foi fechado normalmente e o build repetido passou. O novo executável foi aberto no contexto operacional e a melhoria de legenda foi conferida visualmente: negrito, quebras e hashtags corretos, sem reescrever o banco.
+
+Importação, reprodução, prévias e segunda sincronização reais aprovadas. Falta somente a conferência final de persistência após reabertura para encerrar o aceite ampliado. Não houve alterações no Trello remoto ou início da Fase 05.
+
+Versionamento desta preparação: `test: finalize Trello media import validation` (consultar histórico Git). O aceite depende dos resultados reais registrados nesta seção. Somente código, regressões e documentação são incluídos. Sem push ou tag; dados e snapshots permanecem fora do Git.

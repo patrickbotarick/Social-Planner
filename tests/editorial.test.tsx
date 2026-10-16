@@ -114,4 +114,15 @@ describe('Biblioteca e indicadores', () => {
     vi.mocked(editorial.getEditorialCounts).mockResolvedValue({total:4,drafts:4,pendingReview:0,approved:0}); await user.click(screen.getByRole('link',{name:'Dashboard'}));
     await waitFor(() => { expect(editorial.getEditorialCounts).toHaveBeenCalledTimes(2); }); expect(within(screen.getByRole('region',{name:'Resumo editorial'})).getAllByText('4')).toHaveLength(2);
   });
+  it('apresenta negrito Trello e copia a legenda editorial integral, com os marcadores', async () => {
+    const caption = '**Texto editorial 😊**\n\\#GMAD\n<script>texto inerte</script>';
+    vi.mocked(editorial.getPublication).mockResolvedValue({ ...publication, source: 'trello', caption });
+    const user = userEvent.setup();
+    render(<ToastProvider><PublicationDetails id={id} /></ToastProvider>);
+    await screen.findByRole('heading', { name: publication.title });
+    expect(screen.getByText('Texto editorial 😊').tagName).toBe('STRONG');
+    await user.click(screen.getByRole('button', { name: 'Copiar legenda' }));
+    expect(await navigator.clipboard.readText()).toBe(caption);
+    expect(editorial.savePublication).not.toHaveBeenCalled();
+  });
 });

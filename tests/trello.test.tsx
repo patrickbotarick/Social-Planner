@@ -26,6 +26,17 @@ describe('Importações Trello', () => {
   it('prévia web não chama IPC nem simula conexão', () => { vi.mocked(desktopAvailable).mockReturnValue(false); render(<Imports />); expect(screen.getByRole('button', { name: 'Consultar quadro' })).toBeDisabled(); expect(trello.trelloHistory).not.toHaveBeenCalled(); });
 });
 describe('Conexão e origem', () => {
+  it('copia a descrição original sem perder marcadores, quebras ou emojis', async () => {
+    const originalDescription = '**Original 😊**\n\\#GMAD\nTexto da matriz';
+    vi.mocked(trello.trelloSource).mockResolvedValue({ url: 'https://trello.com/c/Ab12Cd34', originalTitle: 'Original', originalDescription, sourceChanged: false, sourceMissing: false, needsAdjustment: false, attachments: [] });
+    const user = userEvent.setup();
+    render(<TrelloSource id="local" />);
+    await user.click(await screen.findByText('Ver texto original e referências'));
+    expect(screen.getByText('Original 😊').tagName).toBe('STRONG');
+    await user.click(screen.getByRole('button', { name: 'Copiar legenda original' }));
+    expect(await navigator.clipboard.readText()).toBe(originalDescription);
+    expect(trello.trelloImport).not.toHaveBeenCalled();
+  });
   it('token fica no campo protegido somente durante configuração e é limpo no envio', async () => { vi.mocked(trello.trelloConnect).mockResolvedValue({ configured: true, account: { fullName: 'Conta QA', username: 'qa' } }); render(<TrelloSettings />); const user = userEvent.setup(); await screen.findByText('Desconectado'); await user.type(screen.getByLabelText('Chave de API Trello'), 'fixture-key'); const token = screen.getByLabelText('Token de autorização'); expect(token).toHaveAttribute('type', 'password'); await user.type(token, 'fixture-token'); await user.click(screen.getByRole('button', { name: 'Conectar Trello' })); await screen.findByText('Conta QA'); expect(token).toHaveValue(''); expect(localStorage.length).toBe(0); expect(trello.trelloConnect).toHaveBeenCalledWith('fixture-key', 'fixture-token'); });
   it('erro de autenticação orienta renovação sem exibir o token', async () => { vi.mocked(trello.trelloStatus).mockResolvedValue({ configured: true, account: null }); vi.mocked(trello.trelloTest).mockRejectedValue({ code: 'TRELLO_AUTH', message: 'Renove a autorização Trello.' }); render(<TrelloSettings />); const user = userEvent.setup(); await user.click(await screen.findByRole('button', { name: 'Testar conexão' })); expect(await screen.findByRole('alert')).toHaveTextContent('Renove'); });
   it('exibe conflito e ausência da origem mantendo texto local separado', async () => { vi.mocked(trello.trelloSource).mockResolvedValue({ url: 'https://trello.com/c/Ab12Cd34', originalTitle: 'Original', originalDescription: 'Descrição da matriz', sourceChanged: true, sourceMissing: true, needsAdjustment: true, attachments: [] }); render(<TrelloSource id="local" />); await waitFor(() => { expect(screen.getByText(/O conteúdo editorial local foi preservado/)).toBeVisible(); }); expect(screen.getByText(/Cartão ausente ou arquivado/)).toBeVisible(); expect(screen.getByRole('link', { name: /Cartão original/ })).toHaveAttribute('href', 'https://trello.com/c/Ab12Cd34'); });

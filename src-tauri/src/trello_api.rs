@@ -358,6 +358,47 @@ pub fn download(
 mod tests {
     use super::*;
     #[test]
+    #[ignore = "inspeção remota opt-in; somente metadados, sem download ou escrita operacional"]
+    fn inspect_authorized_media_candidates() {
+        use crate::trello_vault::{Vault, WindowsVault};
+        assert_eq!(std::env::var("GMAD_LIVE_TRELLO_DIAG").as_deref(), Ok("1"));
+        let short = std::env::var("GMAD_LIVE_TRELLO_BOARD").expect("explicit board");
+        let credentials = WindowsVault
+            .load()
+            .expect("vault read")
+            .expect("configured credential");
+        let mut api = OfficialTransport::new(&credentials, 120).expect("transport");
+        let (_, lists, cards) =
+            read_board(&mut api, &short, &AtomicBool::new(false)).expect("board metadata");
+        println!("lists={} cards={}", lists.len(), cards.len());
+        for card in cards.iter().filter(|c| !c.closed) {
+            let uploads: Vec<_> = card
+                .attachments
+                .iter()
+                .filter(|a| a.is_upload && a.extension().is_some())
+                .collect();
+            let videos = uploads
+                .iter()
+                .filter(|a| a.extension() == Some("mp4"))
+                .count();
+            if videos == 0 && uploads.len() < 2 {
+                continue;
+            }
+            let list = lists
+                .iter()
+                .find(|l| l.id == card.id_list)
+                .map(|l| l.name.as_str());
+            println!(
+                "{}",
+                serde_json::json!({
+                    "id": card.id, "title": card.name, "shortLink": card.short_link, "list": list,
+                    "attachmentCount": card.attachments.len(), "supportedUploads": uploads.len(), "videos": videos,
+                    "attachments": uploads.iter().map(|a| serde_json::json!({"id": a.id, "name": a.name, "mime": a.mime_type, "bytes": a.bytes})).collect::<Vec<_>>()
+                })
+            );
+        }
+    }
+    #[test]
     #[ignore = "download remoto opt-in; cofre existente, armazenamento temporário, sem alterar banco operacional"]
     fn verify_authorized_attachment_download() {
         use crate::trello_vault::{Vault, WindowsVault};

@@ -18,6 +18,8 @@ Validação complementar: [Fase 01.5 — Windows](FASE_01_5_VALIDACAO_WINDOWS.md
 
 ## Portão entre fases
 
+Na Fase 04.5C, os três cartões foram autorizados e importados: dois vídeos e quatro imagens, sem falhas. Prévias, reprodução WebView2 e segunda sincronização aprovadas; zero novas publicações ou downloads na repetição. As duas publicações anteriores foram preservadas. Apresentação limitada da legenda conferida no novo build, com texto armazenado intacto. Nesta etapa, 106 testes locais e 1 inspeção remota aprovados, além dos builds e verificações. Falta somente a conferência após reabertura para concluir o aceite ampliado. Evidências em [Fase 04.5](FASE_04_5_HOMOLOGACAO_TRELLO.md). Fase 05 não foi iniciada.
+
 Na [Fase 04.5B](FASE_04_5_HOMOLOGACAO_TRELLO.md), 100 testes locais e 1 download real passaram, assim como verificações e builds. O usuário abriu o contexto operacional correto; o PNG foi recuperado e associado à publicação original, preservando ID, legenda e estado editorial. Segunda sincronização: zero novas publicações, zero downloads e zero falhas; um único arquivo físico. Reabertura, imagem e integridade do SQLite aprovadas. A Fase 04.5B está concluída; vídeo e múltiplas mídias reais continuam pendentes na homologação ampliada. Fase 05 não iniciada.
 
 Registrar escopo realizado, verificações realmente executadas e pendências. Nenhuma fase seguinte inicia automaticamente. Nesta Fase 01, build/testes Rust e janela Tauri com SQLite/IPC reais foram verificados, além dos testes SQL auxiliares. Os limites específicos da inspeção estão registrados no relatório da Fase 01.5.
