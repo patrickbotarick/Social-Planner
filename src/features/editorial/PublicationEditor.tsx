@@ -7,7 +7,7 @@ import { Badge, Card, EmptyState } from '../../components/ui/Presentation';
 import { useToast } from '../../components/ui/Toast';
 import { desktopAvailable } from '../../services/desktop';
 import { discardMedia, editorialError, getPublication, savePublication, selectMedia } from '../../services/editorial';
-import { formatLabels } from '../../types/editorial';
+import { formatLabels, statusLabels } from '../../types/editorial';
 import type { LeaveGuard, MediaAsset, Publication, PublicationFormat } from '../../types/editorial';
 import { fileSize, MediaPreview } from './MediaPreview';
 
@@ -40,7 +40,7 @@ export function PublicationEditor({ id, onSaved, onCancel, onGuard }: Props) {
   }, [id, native]);
   useEffect(() => { void load(); return () => { request.current += 1; }; }, [load]);
   const discard = useCallback(() => discardMedia(draft.media.map(m => m.id)), [draft.media]);
-  useEffect(() => { onGuard({ dirty: signature(draft) !== baseline, busy: busy || loading, discard }); return () => { onGuard(null); }; }, [draft, baseline, busy, loading, discard, onGuard]);
+
   const dirty = signature(draft) !== baseline;
   const select = async () => {
     setBusy(true); setError(null); setIssues([]);
@@ -61,13 +61,14 @@ export function PublicationEditor({ id, onSaved, onCancel, onGuard }: Props) {
     catch (e) { setError(editorialError(e)); } finally { setBusy(false); }
   };
   const reorder = (index: number, delta: number) => { setDraft(current => { const media = [...current.media]; const item = media[index]; if (item) { media.splice(index,1); media.splice(index+delta,0,item); } return { ...current, media }; }); };
-  const save = async () => {
-    const message = validation(draft, loaded?.source === 'trello'); if (message) { setError(message); return; }
+  const save = useCallback(async () => {
+    const message = validation(draft, !!loaded && loaded.editorialStatus !== 'draft'); if (message) { setError(message); return false; }
     setBusy(true); setError(null);
-    try { const publication = await savePublication({ id: loaded?.id ?? null, expectedVersion: loaded?.version ?? null, title: draft.title, caption: draft.caption, format: draft.format, mediaIds: draft.media.map(m => m.id) }); onGuard(null); setBaseline(signature(draft)); notify(loaded ? 'Alterações salvas.' : 'Publicação criada.'); onSaved(publication); }
-    catch (e) { setError(editorialError(e)); } finally { setBusy(false); }
-  };
-  return <><PageHeader title={id ? 'Editar publicação' : 'Nova publicação'} description="Prepare o conteúdo da unidade. O salvamento permanece neste computador." actions={<div className="page-actions"><Badge>{dirty ? 'Alterações não salvas' : loaded ? loaded.source === 'trello' ? 'Pendente de revisão' : 'Rascunho salvo' : 'Rascunho'}</Badge><Button variant="secondary" onClick={onCancel} disabled={busy || loading}>Cancelar</Button><Button onClick={() => { void save(); }} disabled={!native || busy || loading || !!id && !loaded}>{busy ? 'Processando…' : 'Salvar publicação'}</Button></div>} />
+    try { const publication = await savePublication({ id: loaded?.id ?? null, expectedVersion: loaded?.version ?? null, title: draft.title, caption: draft.caption, format: draft.format, mediaIds: draft.media.map(m => m.id) }); onGuard(null); setBaseline(signature(draft)); notify(loaded ? 'Alterações salvas.' : 'Publicação criada.'); onSaved(publication); return true; }
+    catch (e) { setError(editorialError(e)); return false; } finally { setBusy(false); }
+  }, [draft, loaded, onGuard, notify, onSaved]);
+  useEffect(() => { onGuard({ dirty, busy: busy || loading, discard, save }); return () => { onGuard(null); }; }, [dirty, busy, loading, discard, save, onGuard]);
+  return <><PageHeader title={id ? 'Editar publicação' : 'Nova publicação'} description="Prepare o conteúdo da unidade. O salvamento permanece neste computador." actions={<div className="page-actions"><Badge>{dirty ? 'Alterações não salvas' : loaded ? statusLabels[loaded.editorialStatus] : 'Rascunho'}</Badge><Button variant="secondary" onClick={onCancel} disabled={busy || loading}>Cancelar</Button><Button onClick={() => { void save(); }} disabled={!native || busy || loading || !!id && !loaded}>{busy ? 'Processando…' : 'Salvar publicação'}</Button></div>} />
     {!native && <p role="status" className="editorial-notice">Abra a janela desktop para cadastrar e armazenar publicações. Esta prévia não simula persistência.</p>}
     {loading ? <p role="status">Carregando publicação…</p> : id && !loaded ? <Card><div className="card-body"><p role="alert">{error ?? 'Publicação indisponível.'}</p><Button variant="secondary" onClick={() => { void load(); }}>Tentar novamente</Button></div></Card> : <>
       {loaded?.source === 'trello' && <TrelloSource id={loaded.id} disabled={busy} onAdd={media => { if (draft.media.some(m => m.checksum === media.checksum)) { setError('Esta mídia já está na composição.'); return; } setDraft(current => ({ ...current, media: [...current.media, media] })); }} />}

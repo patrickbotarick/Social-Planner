@@ -13,6 +13,89 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 const BID: &str = "aaaaaaaaaaaaaaaaaaaaaaaa";
+#[test]
+fn resync_preserves_approved_and_ignored_decisions_local_edits_and_audit() {
+    use crate::review::{HistoryQuery, ReviewAction, ReviewDecision, ReviewQuery, ReviewTarget};
+    let dir = tempfile::tempdir().unwrap();
+    let mut r = EditorialRepository::open(dir.path()).unwrap();
+    for (number, action, status) in [
+        (40, ReviewAction::Approve, "approved"),
+        (41, ReviewAction::Ignore, "ignored"),
+    ] {
+        let mut c = card(number);
+        c.attachments.push(attachment(number, "safe.png"));
+        let p = preview(&r, vec![c.clone()]);
+        run(
+            &mut r,
+            &p,
+            &mut Mock::new(vec![response(200, png(number as u8))]),
+            &AtomicBool::new(false),
+        );
+        let id = publication(&r, &c.id);
+        let initial = r.get(&id).unwrap();
+        let edited = r
+            .save(SavePublication {
+                id: Some(id.clone()),
+                expected_version: Some(initial.version),
+                title: "Título Rio Preto".into(),
+                caption: "Texto local 😊\n#GMAD".into(),
+                format: PublicationFormat::Feed,
+                media_ids: initial.media.iter().map(|m| m.id.clone()).collect(),
+            })
+            .unwrap();
+        assert!(
+            r.review_decide(ReviewDecision {
+                targets: vec![ReviewTarget {
+                    id: id.clone(),
+                    expected_version: edited.version
+                }],
+                action,
+                reason: None,
+                note: None
+            })
+            .unwrap()[0]
+                .success
+        );
+        let before = r.get(&id).unwrap();
+        c.desc = "Nova descrição remota".into();
+        let p = preview(&r, vec![c]);
+        let job = run(&mut r, &p, &mut Mock::new(vec![]), &AtomicBool::new(false));
+        assert_eq!(job.new_publications, 0);
+        assert_eq!(job.downloaded_attachments, 0);
+        let after = r.get(&id).unwrap();
+        assert_eq!(after.editorial_status, status);
+        assert_eq!(after.version, before.version);
+        assert_eq!(after.caption, before.caption);
+        assert_eq!(after.title, before.title);
+        assert_eq!(after.media[0].id, before.media[0].id);
+        let origin = r.trello_source(&id).unwrap().unwrap();
+        assert!(origin.source_changed);
+        assert_eq!(origin.original_description, "Nova descrição remota");
+        assert_eq!(
+            r.review_history(HistoryQuery {
+                publication_id: Some(id),
+                ..Default::default()
+            })
+            .unwrap()
+            .total,
+            2
+        );
+    }
+    let q = r.review_list(ReviewQuery::default()).unwrap();
+    assert_eq!(q.total, 2);
+    let board_id = q.boards[0].id.clone();
+    let q = r
+        .review_list(ReviewQuery {
+            board_id: Some(board_id),
+            source_list: Some("Campanhas".into()),
+            status: Some("approved".into()),
+            source: Some("trello".into()),
+            ..Default::default()
+        })
+        .unwrap();
+    assert_eq!(q.total, 1);
+    assert_eq!(q.items[0].publication.editorial_status, "approved");
+}
 const LID: &str = "bbbbbbbbbbbbbbbbbbbbbbbb";
 fn board() -> Board {
     Board {

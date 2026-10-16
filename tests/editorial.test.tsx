@@ -25,7 +25,7 @@ beforeEach(() => {
   vi.mocked(editorial.savePublication).mockResolvedValue(publication);
   vi.mocked(editorial.getPublication).mockResolvedValue(publication);
   vi.mocked(editorial.listPublications).mockResolvedValue({items:[],total:0});
-  vi.mocked(editorial.getEditorialCounts).mockResolvedValue({total:3,drafts:3,pendingReview:0,approved:0});
+  vi.mocked(editorial.getEditorialCounts).mockResolvedValue({total:3,drafts:3,pendingReview:0,approved:0,ignored:0});
   vi.mocked(editorial.duplicatePublication).mockResolvedValue({...publication,id:'00000000-0000-4000-8000-000000000004',title:'Campanha manual (cópia)'});
   vi.mocked(editorial.deletePublication).mockResolvedValue();
 });
@@ -74,20 +74,30 @@ describe('Formulário editorial', () => {
   it('evita perda por navegação e só descarta após confirmação', async () => {
     window.history.replaceState(null,'','#/nova-publicacao'); render(<App />); const user=userEvent.setup();
     await user.type(screen.getByRole('textbox',{name:'Título interno'}),'Ainda não salvo'); await user.click(screen.getByRole('button',{name:'Selecionar mídias'}));
-    await user.click(screen.getByRole('link',{name:'Biblioteca editorial'})); expect(screen.getByRole('dialog')).toHaveAccessibleName('Descartar alterações não salvas?');
-    await user.click(within(screen.getByRole('dialog')).getByRole('button',{name:'Cancelar'})); expect(screen.getByRole('textbox',{name:'Título interno'})).toHaveValue('Ainda não salvo');
+    await user.click(screen.getByRole('link',{name:'Biblioteca editorial'})); expect(screen.getByRole('dialog')).toHaveAccessibleName('Alterações não salvas');
+    await user.click(within(screen.getByRole('dialog')).getByRole('button',{name:'Permanecer'})); expect(screen.getByRole('textbox',{name:'Título interno'})).toHaveValue('Ainda não salvo');
     expect(editorial.discardMedia).not.toHaveBeenCalledWith([first.id]); await user.click(screen.getByRole('link',{name:'Biblioteca editorial'}));
     await user.click(screen.getByRole('button',{name:'Descartar e sair'})); expect(await screen.findByRole('heading',{level:1,name:'Biblioteca editorial'})).toBeVisible(); expect(editorial.discardMedia).toHaveBeenCalledWith([first.id]);
   });
   it('protege também mudança de hash pelo histórico', async () => {
     window.history.replaceState(null,'','#/nova-publicacao'); render(<App />); const user=userEvent.setup();
     await user.type(screen.getByRole('textbox',{name:'Título interno'}),'Em edição'); await act(async () => { window.location.hash='#/dashboard'; });
-    expect(await screen.findByRole('dialog')).toHaveAccessibleName('Descartar alterações não salvas?'); expect(window.location.hash).toBe('#/nova-publicacao');
-    await user.click(within(screen.getByRole('dialog')).getByRole('button',{name:'Cancelar'})); expect(screen.getByRole('textbox',{name:'Título interno'})).toHaveValue('Em edição');
+    expect(await screen.findByRole('dialog')).toHaveAccessibleName('Alterações não salvas'); expect(window.location.hash).toBe('#/nova-publicacao');
+    await user.click(within(screen.getByRole('dialog')).getByRole('button',{name:'Permanecer'})); expect(screen.getByRole('textbox',{name:'Título interno'})).toHaveValue('Em edição');
   });
 });
 
 describe('Biblioteca e indicadores', () => {
+  it('salva explicitamente antes de navegar para outra área pelo diálogo global', async () => {
+    window.history.replaceState(null, '', '#/nova-publicacao'); render(<App />);
+    const user = userEvent.setup();
+    await user.type(screen.getByRole('textbox', { name: 'Título interno' }), 'Salvar antes de sair');
+    await user.click(screen.getByRole('button', { name: 'Selecionar mídias' }));
+    await user.click(screen.getByRole('link', { name: 'Dashboard' }));
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Salvar e continuar' }));
+    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeVisible();
+    expect(editorial.savePublication).toHaveBeenCalledWith(expect.objectContaining({ title: 'Salvar antes de sair', mediaIds: [first.id] }));
+  });
   it('pesquisa com atraso curto e passa filtros/paginação ao backend', async () => {
     render(<ToastProvider><Library /></ToastProvider>); const user=userEvent.setup(); await screen.findByText('Crie sua primeira publicação');
     await user.type(screen.getByRole('searchbox',{name:'Pesquisar publicações'}),'campanha'); await waitFor(() => { expect(editorial.listPublications).toHaveBeenLastCalledWith(expect.objectContaining({search:'campanha',offset:0,limit:24})); });
@@ -111,7 +121,7 @@ describe('Biblioteca e indicadores', () => {
     render(<App />); const user=userEvent.setup(); await screen.findByText('Contagens reais do banco local. Publicações excluídas não são contabilizadas.');
     const summary=screen.getByRole('region',{name:'Resumo editorial'}); expect(within(summary).getByText('Total de publicações')).toBeVisible();
     await user.click(screen.getByRole('link',{name:'Biblioteca editorial'})); await screen.findByText('Crie sua primeira publicação');
-    vi.mocked(editorial.getEditorialCounts).mockResolvedValue({total:4,drafts:4,pendingReview:0,approved:0}); await user.click(screen.getByRole('link',{name:'Dashboard'}));
+    vi.mocked(editorial.getEditorialCounts).mockResolvedValue({total:4,drafts:4,pendingReview:0,approved:0,ignored:0}); await user.click(screen.getByRole('link',{name:'Dashboard'}));
     await waitFor(() => { expect(editorial.getEditorialCounts).toHaveBeenCalledTimes(2); }); expect(within(screen.getByRole('region',{name:'Resumo editorial'})).getAllByText('4')).toHaveLength(2);
   });
   it('apresenta negrito Trello e copia a legenda editorial integral, com os marcadores', async () => {

@@ -66,7 +66,8 @@ Espaçamentos: 4, 8, 12, 16, 20, 24, 32 e 40 px (`--space-1` a `--space-10`, con
 | Skeleton | Estrutura visual de carregamento, sem pulsação; acompanhado de status textual. |
 | Tabs | Seleção, tab/panel associados, roving tabindex, setas/Home/End. Usado em Configurações. |
 | Modal | Dialog nativo, título acessível, fundo inerte, foco inicial, Tab contido, Escape e restauração do foco. Usado na ajuda. |
-| ConfirmDialog | Composição simples de Modal para futuras decisões relevantes. Só exercitado em testes nesta fase. Não confirmar navegação trivial. |
+| ConfirmDialog | Composição simples de Modal para decisões relevantes, como exclusão lógica na biblioteca. Não confirmar navegação trivial. |
+| UnsavedDialog | Salvar e continuar, descartar e sair ou permanecer; usado pela guarda global e pela revisão editorial. Falhas mantêm o formulário aberto. |
 | ToastProvider / useToast | Feedback acessível de cópia do caminho; status para sucesso, alert para erro; sucesso fecha após 6 s, erro permanece até dispensado. |
 | Tooltip | Informação complementar ao hover/foco; associação `aria-describedby`; Escape dispensa. Não contém instrução essencial exclusiva. |
 
@@ -74,7 +75,7 @@ Primitivos em `src/components/ui/`; estilos comuns em `src/styles/global.css`; c
 
 ## Estados e acessibilidade
 
-Controles futuros têm `disabled` nativo e orientação visível da fase. Links de atalhos navegam para áreas vazias; não executam importação/criação. Loading, erro, prévia web e conexão real continuam distintos. Mensagens de erro são claras e não expõem falhas internas desconhecidas.
+Controles futuros têm `disabled` nativo e orientação visível da fase. Atalhos de importação, criação e revisão navegam para os fluxos implementados; calendário persistente continua futuro. Loading, erro, prévia web e conexão real continuam distintos. Mensagens de erro são claras e não expõem falhas internas desconhecidas. Revisão usa erros impeditivos e avisos separados, sem depender apenas da cor; lotes exigem confirmação e mostram resultados por item.
 
 Preservar skip link, landmarks, hierarquia de títulos, links reais, `aria-current` e mudança de foco/título ao navegar. O calendário possui 42 dias com datas completas acessíveis e `aria-current="date"` no dia atual; nenhuma célula vazia simula ação de agendamento. Campos não dependem apenas de placeholder.
 

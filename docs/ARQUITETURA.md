@@ -53,7 +53,7 @@ Falhas: `{ code, message }` com códigos `DATABASE_UNAVAILABLE`, `DATABASE_INTEG
 
 ## Segurança
 
-`build.rs` declara os comandos de aplicação no manifesto; a capability `main` concede diagnóstico, oito comandos editoriais e dez comandos Trello específicos, além de listen/unlisten de eventos e destroy para guarda de fechamento. Não há permissões genéricas para origens remotas, SQL, filesystem, shell ou HTTP. O seletor oficial dialog é chamado apenas pelo Rust. Protocolo asset inicia com escopo vazio e libera somente mídia/staging controlados; CSP permite esses ativos locais em img-src/media-src. Desenvolvimento adiciona Vite/HMR em loopback. Recursos externos não são carregados pela UI.
+`build.rs` declara os comandos de aplicação no manifesto; a capability `main` concede diagnóstico, oito comandos editoriais e dez comandos Trello específicos e quatro comandos de revisão editorial, além de listen/unlisten de eventos e destroy para guarda de fechamento. Não há permissões genéricas para origens remotas, SQL, filesystem, shell ou HTTP. O seletor oficial dialog é chamado apenas pelo Rust. Protocolo asset inicia com escopo vazio e libera somente mídia/staging controlados; CSP permite esses ativos locais em img-src/media-src. Desenvolvimento adiciona Vite/HMR em loopback. Recursos externos não são carregados pela UI.
 
 Credenciais e integração Trello são responsabilidade do Rust. O SQLite editorial não é um cofre de segredos; arquivos locais herdam proteção do perfil Windows e não são criptografados por este aplicativo nesta fase. O token Trello fica exclusivamente no Windows Credential Manager; o frontend só recebe a entrada transitória do formulário e a limpa ao enviar.
 
@@ -93,6 +93,12 @@ TrelloState serializa operações, mantém a prévia em memória por 15 minutos,
 
 A migração 003 é aditiva e mantém 001/002 intactas. Snapshot remoto e Publication são independentes; reimportação nunca sobrescreve composição/estado/versão editorial. Arquivos completos promovidos são conservados em falhas posteriores; temporários conhecidos são removidos. Jobs interrompidos são identificados ao abrir o aplicativo. Não existe limpeza destrutiva de arquivos órfãos.
 
-Configurações → Trello usa autorização pessoal oficial somente leitura e cofre nativo; Importações oferece prévia, confirmação, limites, progresso, cancelamento e histórico. Detalhes/editor mostram origem e anexos; anexos novos entram na composição somente por ação explícita. O cadastro manual permanece independente. Aprovação completa e calendário não foram implementados.
+Configurações → Trello usa autorização pessoal oficial somente leitura e cofre nativo; Importações oferece prévia, confirmação, limites, progresso, cancelamento e histórico. Detalhes/editor mostram origem e anexos; anexos novos entram na composição somente por ação explícita. O cadastro manual permanece independente. Aprovação/revisão foram implementadas na Fase 05; calendário persistente permanece futuro.
 
 Contratos, fontes oficiais e limitações: [Integração Trello](INTEGRACAO_TRELLO.md). Evidências e distinção entre mocks e serviço real: [Fase 04](FASE_04_INTEGRACAO_TRELLO.md).
+
+## Revisão editorial da Fase 05
+
+`review.rs` amplia o repositório existente com fila, análise, decisões e histórico; quatro comandos específicos (`review_list`, `review_get`, `review_decide`, `review_history`) usam o worker bloqueante e o mutex editorial existente. SQL parametrizado e DTOs restritos mantêm o frontend sem acesso genérico ao banco/arquivos. Migração 004 adiciona eventos imutáveis; atualização otimista e auditoria são atômicas por publicação. Lotes retornam um resultado por alvo, sem transação global que descarte os sucessos.
+
+Review, ReviewIndividual e ReviewHistory compõem os controles existentes; PublicationEditor e MediaPreview são reutilizados. Guarda de navegação/fechamento compartilha salvar/descartar/permanecer, sem salvar implicitamente. Filas mantêm IDs ordenados da seleção aberta, filtros/página e navegação segura fora de campos. Inspeção completa verifica hashes e conteúdo no worker Rust; a listagem usa caminho/tamanho. Vídeos usam controles WebView2, com falha de reprodução distinta de download. Limites e evidências em [Fase 05](FASE_05_REVISAO_EDITORIAL.md).

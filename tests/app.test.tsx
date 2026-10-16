@@ -12,7 +12,7 @@ vi.mock('../src/services/desktop', async (importOriginal) => {
   const original = await importOriginal<typeof DesktopService>();
   return { ...original, desktopAvailable: vi.fn(), getFoundationStatus: vi.fn() };
 });
-vi.mock('../src/services/editorial', async (importOriginal) => ({ ...await importOriginal<typeof EditorialService>(), getEditorialCounts: vi.fn().mockResolvedValue({ total: 0, drafts: 0, pendingReview: 0, approved: 0 }) }));
+vi.mock('../src/services/editorial', async (importOriginal) => ({ ...await importOriginal<typeof EditorialService>(), getEditorialCounts: vi.fn().mockResolvedValue({ total: 0, drafts: 0, pendingReview: 0, approved: 0, ignored: 0 }) }));
 
 const status: FoundationStatus = {
   schemaVersion: 1,

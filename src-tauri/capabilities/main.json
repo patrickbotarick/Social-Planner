@@ -6,6 +6,10 @@
     "main"
   ],
   "permissions": [
+    "allow-review-list",
+    "allow-review-get",
+    "allow-review-decide",
+    "allow-review-history",
     "allow-foundation-status",
     "allow-publication-list",
     "allow-publication-get",

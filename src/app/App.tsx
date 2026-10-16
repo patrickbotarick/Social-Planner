@@ -14,7 +14,7 @@ import { Calendar } from '../pages/Calendar';
 import { NewPublication } from '../pages/NewPublication';
 import { PublicationDetails } from '../pages/PublicationDetails';
 import { History } from '../pages/History';
-import { ConfirmDialog } from '../components/ui/Modal';
+import { UnsavedDialog } from '../components/ui/Modal';
 import { ToastProvider, useToast } from '../components/ui/Toast';
 import { editorialError } from '../services/editorial';
 import type { LeaveGuard } from '../types/editorial';
@@ -55,6 +55,11 @@ function Application() {
     try { await guard.current?.discard(); guard.current = null; const run = pending.run; setPending(null); await run(); }
     catch (e) { notify(editorialError(e),'danger'); } finally { setLeaving(false); }
   };
+  const saveAndLeave = async () => {
+    if (!pending || leaving) return; setLeaving(true);
+    try { if (!await guard.current?.save?.()) return; guard.current = null; const run=pending.run; setPending(null); await run(); }
+    catch(e) { notify(editorialError(e),'danger'); } finally { setLeaving(false); }
+  };
   const intercept = (event: MouseEvent) => {
     const anchor = event.target instanceof Element ? event.target.closest('a[href]') : null;
     const target = anchor?.getAttribute('href');
@@ -67,12 +72,12 @@ function Application() {
       case 'dashboard': return <Dashboard state={state} onRefresh={refresh} />;
       case 'biblioteca': return <Library />;
       case 'importacoes': return <Imports onGuard={onGuard} />;
-      case 'revisao': return <Review />;
+      case 'revisao': return <Review onGuard={onGuard} />;
       case 'calendario': return <Calendar timezone={state.kind === 'ready' ? state.data.settings.timezone : 'America/Sao_Paulo'} />;
       case 'nova-publicacao': return <NewPublication key={route} onGuard={onGuard} onCancel={() => { attempt(() => { window.location.hash = '#/biblioteca'; }); }} onSaved={publication => { window.location.hash = '#/biblioteca/'+publication.id; }} />;
       case 'historico': return <History />;
       case 'configuracoes': return <Settings state={state} onRefresh={refresh} />;
     }
   };
-  return <div onClickCapture={intercept}><AppShell section={section} mainRef={main} state={state}>{content()}</AppShell><ConfirmDialog open={!!pending} title="Descartar alterações não salvas?" description="As alterações deste formulário serão descartadas. Os arquivos originais e as publicações já salvas serão preservados." confirmLabel={leaving ? 'Saindo…' : 'Descartar e sair'} onConfirm={() => { void discardAndLeave(); }} onClose={() => { if (!leaving) setPending(null); }} /></div>;
+  return <div onClickCapture={intercept}><AppShell section={section} mainRef={main} state={state}>{content()}</AppShell><UnsavedDialog open={!!pending} busy={leaving} onSave={guard.current?.save ? () => { void saveAndLeave(); } : undefined} onDiscard={() => { void discardAndLeave(); }} onStay={() => { if (!leaving) setPending(null); }} /></div>;
 }

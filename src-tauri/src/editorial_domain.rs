@@ -158,6 +158,7 @@ pub struct EditorialCounts {
     pub drafts: u32,
     pub pending_review: u32,
     pub approved: u32,
+    pub ignored: u32,
 }
 #[derive(Debug, Serialize)]
 pub struct ImportIssue {

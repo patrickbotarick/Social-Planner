@@ -9,6 +9,21 @@ import assert from 'node:assert/strict';
 const sql = readFileSync(new URL('../src-tauri/migrations/001_foundation.sql', import.meta.url), 'utf8');
 const editorialSql = readFileSync(new URL('../src-tauri/migrations/002_editorial_library.sql', import.meta.url), 'utf8');
 
+test('migração de revisão preserva dados anteriores e protege histórico imutável por versão', () => {
+  const db = new DatabaseSync(':memory:');
+  db.exec('PRAGMA foreign_keys=ON');db.exec(sql);db.exec(editorialSql);
+  db.exec(readFileSync(new URL('../src-tauri/migrations/003_trello_import.sql', import.meta.url),'utf8'));
+  db.prepare('INSERT INTO publications(id,title,caption,search_text,format) VALUES(?,?,?,?,?)').run('before','Preservar','😊\n#GMAD','preservar','feed');
+  const before=db.prepare('SELECT * FROM publications').get();
+  db.exec(readFileSync(new URL('../src-tauri/migrations/004_editorial_review.sql',import.meta.url),'utf8'));
+  assert.deepEqual(db.prepare('SELECT * FROM publications').get(),before);
+  db.exec("INSERT INTO editorial_reviews(id,publication_id,event,previous_status,next_status,reviewed_version,resulting_version) VALUES('event','before','submitted','draft','pending_review',1,2)");
+  assert.throws(()=>db.exec("UPDATE editorial_reviews SET next_status='approved'"));
+  assert.throws(()=>db.exec('DELETE FROM editorial_reviews'));
+  assert.throws(()=>db.exec("INSERT INTO editorial_reviews(id,publication_id,event,previous_status,next_status,reviewed_version,resulting_version) VALUES('bad','before','approved','pending_review','approved',2,4)"));
+  assert.equal(db.prepare('PRAGMA quick_check').get().quick_check,'ok');assert.deepEqual(db.prepare('PRAGMA foreign_key_check').all(),[]);db.close();
+});
+
 test('migração cria preferências reais, preserva alterações após reabrir e mantém integridade', () => {
   const directory = mkdtempSync(join(tmpdir(), 'gmad-sql-test-'));
   const file = join(directory, 'test.sqlite3');

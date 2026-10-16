@@ -1,6 +1,6 @@
 # Modelo de dados
 
-O [Projeto mestre](PROJETO_MESTRE.md#4-modelo-de-dados-planejado) define os contratos oficiais. Fase 01: histórico/preferências. Migração incremental 002 da Fase 03: publicações, mídias e vínculos ordenados. A migração 003 da Fase 04 acrescenta origens Trello, anexos e jobs, sem alterar as migrações anteriores.
+O [Projeto mestre](PROJETO_MESTRE.md#4-modelo-de-dados-planejado) define os contratos oficiais. Fase 01: histórico/preferências. Migração incremental 002 da Fase 03: publicações, mídias e vínculos ordenados. A migração 003 da Fase 04 acrescenta origens Trello, anexos e jobs, sem alterar as migrações anteriores. A migração 004 acrescenta histórico editorial imutável por versão.
 
 ## Esquema implementado
 
@@ -43,7 +43,7 @@ publication_id FK com ON DELETE CASCADE; media_asset_id FK com ON DELETE RESTRIC
 
 ## Evolução planejada — sem antecipar migrações futuras
 
-Publication, MediaAsset, PublicationMedia, AppSettings, TrelloBoard e ImportedCard já existem. EditorialReview, Schedule e PublicationEvent continuam futuros. A tabela e o diagrama representam o modelo completo planejado; variantes de um mesmo cartão exigirão evolução explícita do vínculo inicial 1:1 implementado.
+Publication, MediaAsset, PublicationMedia, AppSettings, TrelloBoard e ImportedCard já existem. EditorialReview foi implementado na migração 004. Schedule e PublicationEvent continuam futuros. A tabela e o diagrama representam o modelo completo planejado; variantes de um mesmo cartão exigirão evolução explícita do vínculo inicial 1:1 implementado.
 
 | Entidade | Identidade e relações | Dados principais / proteção |
 | --- | --- | --- |
@@ -73,7 +73,7 @@ erDiagram
 
 ## Estados e consistência
 
-Não implementar um único enum que misture aprovação, intenção local e prova externa. Os três eixos e transições oficiais estão no mestre: editorial (`draft`, `pending_review`, `editing`, `approved`, `ignored`, `ready_to_schedule`); agendamento (`local`, `submitting`, `submitted`, `confirmed`, `failed`, `unknown`); publicação real (`not_published`, `published`). Fase 03 implementa draft → draft; Fase 04 acrescenta criação/edição de trello/pending_review mantendo o estado. Não existe aprovação/agendamento/publicação.
+Não implementar um único enum que misture aprovação, intenção local e prova externa. Os três eixos e transições oficiais estão no mestre: editorial (`draft`, `pending_review`, `editing`, `approved`, `ignored`, `ready_to_schedule`); agendamento (`local`, `submitting`, `submitted`, `confirmed`, `failed`, `unknown`); publicação real (`not_published`, `published`). Fase 03 implementa draft → draft; Fase 04 acrescenta criação/edição de trello/pending_review mantendo o estado. A Fase 05 acrescenta draft → pending_review, pending_review/editing → approved/ignored e retorno explícito a pending_review. Edição de approved/ignored/editing retorna a pending_review, sem criar outro estado. Não existe agendamento/publicação externa.
 
 Edição incrementa versão e invalida prontidão. Um Schedule referencia a versão do conteúdo, impedindo que uma edição posterior pareça ter sido enviada. Antes de reenviar um resultado incerto, reconciliar usando IDs externos/idempotência. Nenhum estado confirmado nasce de um clique de preparação local.
 
@@ -81,7 +81,7 @@ Edição incrementa versão e invalida prontidão. Um Schedule referencia a vers
 
 Identificar cartões e anexos por IDs externos; títulos não são chaves. Upsert transacional atualiza apenas snapshots da origem. Mudanças sinalizam revisão sem sobrescrever legenda/mídias organizadas pelo usuário. Downloads usam arquivo temporário, limites e conclusão atômica antes do estado disponível. Não excluir publicação porque o cartão desapareceu da origem.
 
-Índices, foreign keys e retenção editorial estão implementados nas migrações 002/003. Revisão, agendamento e evidências externas continuam planejados para as fases próprias.
+Índices, foreign keys e retenção editorial estão implementados nas migrações 002–004. Revisão está implementada na Fase 05; agendamento e evidências externas continuam planejados para as fases próprias.
 
 ## Origem Trello — migração 003
 
@@ -97,3 +97,9 @@ Identificar cartões e anexos por IDs externos; títulos não são chaves. Upser
 Upsert é transacional por cartão. A primeira importação cria uma única publicação pendente; as demais atualizam somente a origem. Remoção de anexo/cartão marca flags e conserva arquivos/publicações. source_changed permanece sinalizado, sem aceite automático. Erro de anexo conserva vínculo de mídia anterior, se houver. Falha do cartão não invalida cartões já concluídos.
 
 A data do quadro avança ao concluir a seleção confirmada sem falhas; não implica que todos os cartões do quadro foram selecionados. Falhas de cartão têm contagem e mensagem final; não existe tabela de eventos por tentativa/cartão. Jobs guardam os resultados da operação, não um log de payloads. Conta/chave/token não pertencem ao modelo SQLite.
+
+## Histórico editorial — migração 004
+
+`editorial_reviews`: id UUID PK; publication_id FK RESTRICT; event approved/ignored/returned/submitted/edited; previous_status e next_status no enum editorial existente; reviewed_version > 0; resulting_version = reviewed_version + 1; reason opcional product/campaign/irrelevant/duplicate/other; note opcional até 2.000 caracteres; created_at UTC. Motivo/observação só são aceitos em ignored. Índices por publicação/data e eventos recentes; triggers impedem UPDATE e DELETE. Exclusão lógica da publicação conserva o histórico.
+
+Decisão e edição usam versão esperada, incrementam a versão e gravam evento na mesma transação. Lotes são independentes por item, preservando resultados parciais. Auditoria não guarda texto editorial completo ou credenciais. A reimportação Trello preserva estado, versão e eventos editoriais. Regras e testes em [Fase 05](FASE_05_REVISAO_EDITORIAL.md).

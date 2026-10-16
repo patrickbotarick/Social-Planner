@@ -237,6 +237,25 @@ pub fn checksum(path: &Path) -> Result<String, AppError> {
     }
     Ok(format!("{:x}", digest.finalize()))
 }
+pub(crate) fn verify_asset(path: &Path, media: &MediaAsset) -> Result<(), AppError> {
+    let maximum = if media.extension == "mp4" {
+        512 * 1024 * 1024
+    } else {
+        64 * 1024 * 1024
+    };
+    if media.size_bytes == 0 || media.size_bytes > maximum || checksum(path)? != media.checksum {
+        return Err(AppError::media());
+    }
+    let (mime, width, height, duration) = inspect(path, &media.extension, media.size_bytes)?;
+    if mime != media.mime_type
+        || width != media.width
+        || height != media.height
+        || duration != media.duration
+    {
+        return Err(AppError::media());
+    }
+    Ok(())
+}
 type Inspection = (&'static str, Option<u32>, Option<u32>, Option<f64>);
 fn inspect(path: &Path, extension: &str, size: u64) -> Result<Inspection, AppError> {
     if extension == "mp4" {

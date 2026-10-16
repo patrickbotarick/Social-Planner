@@ -88,8 +88,8 @@ impl EditorialRepository {
                     .unwrap_or_else(|| asset(&self.database.connection, id))
             })
             .collect::<Result<Vec<_>, _>>()?;
-        let imported_pending = input.id.as_ref().is_some_and(|id| self.database.connection.query_row("SELECT source='trello' AND editorial_status='pending_review' FROM publications WHERE id=?1", [id], |r| r.get::<_,bool>(0)).unwrap_or(false));
-        if !(imported_pending && media.is_empty()) {
+        let reviewable = input.id.as_ref().is_some_and(|id| self.database.connection.query_row("SELECT editorial_status IN ('pending_review','editing','approved','ignored') FROM publications WHERE id=?1", [id], |r| r.get::<_,bool>(0)).unwrap_or(false));
+        if !(reviewable && media.is_empty()) {
             input.format.validate(&media)?;
         }
         for m in &media {
@@ -104,10 +104,19 @@ impl EditorialRepository {
         let mut installed = Vec::new();
         let result = (|| -> Result<(), AppError> {
             if let Some(version) = input.expected_version {
-                let changed = transaction.execute("UPDATE publications SET title=?1,caption=?2,search_text=?3,format=?4,version=version+1,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=?5 AND version=?6 AND ((source='manual' AND editorial_status='draft') OR (source='trello' AND editorial_status='pending_review')) AND deleted_at IS NULL", params![input.title.trim(), input.caption, normalized(&format!("{} {}", input.title, input.caption)), input.format.as_str(), id, version])?;
+                let previous: String = transaction
+                    .query_row(
+                        "SELECT editorial_status FROM publications WHERE id=?1",
+                        [&id],
+                        |r| r.get(0),
+                    )
+                    .optional()?
+                    .ok_or_else(AppError::not_found)?;
+                let changed = transaction.execute("UPDATE publications SET title=?1,caption=?2,search_text=?3,format=?4,editorial_status=CASE WHEN editorial_status IN ('approved','ignored','editing') THEN 'pending_review' ELSE editorial_status END,version=version+1,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=?5 AND version=?6 AND editorial_status IN ('draft','pending_review','editing','approved','ignored') AND deleted_at IS NULL", params![input.title.trim(), input.caption, normalized(&format!("{} {}", input.title, input.caption)), input.format.as_str(), id, version])?;
                 if changed != 1 {
                     return Err(AppError::conflict());
                 }
+                transaction.execute("INSERT INTO editorial_reviews(id,publication_id,event,previous_status,next_status,reviewed_version,resulting_version) SELECT ?1,id,'edited',?2,editorial_status,?3,version FROM publications WHERE id=?4",params![Uuid::new_v4().to_string(),previous,version,id])?;
                 transaction.execute(
                     "DELETE FROM publication_media WHERE publication_id=?1",
                     [&id],
@@ -278,6 +287,6 @@ impl EditorialRepository {
         Ok(LibraryPage { items, total })
     }
     pub fn counts(&self) -> Result<EditorialCounts, AppError> {
-        Ok(self.database.connection.query_row("SELECT COUNT(*),COALESCE(SUM(editorial_status='draft'),0),COALESCE(SUM(editorial_status='pending_review'),0),COALESCE(SUM(editorial_status IN ('approved','ready_to_schedule')),0) FROM publications WHERE deleted_at IS NULL", [], |r| Ok(EditorialCounts { total: r.get(0)?, drafts: r.get(1)?, pending_review: r.get(2)?, approved: r.get(3)? }))?)
+        Ok(self.database.connection.query_row("SELECT COUNT(*),COALESCE(SUM(editorial_status='draft'),0),COALESCE(SUM(editorial_status IN ('pending_review','editing')),0),COALESCE(SUM(editorial_status IN ('approved','ready_to_schedule')),0),COALESCE(SUM(editorial_status='ignored'),0) FROM publications WHERE deleted_at IS NULL", [], |r| Ok(EditorialCounts { total: r.get(0)?, drafts: r.get(1)?, pending_review: r.get(2)?, approved: r.get(3)?, ignored: r.get(4)? }))?)
     }
 }

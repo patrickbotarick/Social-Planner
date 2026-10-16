@@ -2,7 +2,7 @@
 
 Aplicativo Windows local-first para organizar o conteúdo editorial de Instagram da GMAD Rio Preto, recebido mensalmente do Trello da matriz.
 
-**Estado:** Fases 01–03 validadas. A Fase 04 implementa conexão Trello protegida no Windows, prévia/seleção de cartões, importação de textos e mídias e sincronização que preserva edições locais. Validação automatizada e desktop local registrada na [Fase 04](docs/FASE_04_INTEGRACAO_TRELLO.md); autorização e importação do quadro real permanecem pendentes. Revisão completa, calendário persistente e Meta continuam nas fases 05–09. Nenhuma publicação externa é executada.
+**Estado:** Fases 01–04 validadas, incluindo [homologação Trello real](docs/FASE_04_5_HOMOLOGACAO_TRELLO.md). A [Fase 05](docs/FASE_05_REVISAO_EDITORIAL.md) implementa fila de revisão, decisões reversíveis individuais/em lote, edição protegida e histórico por versão; validada no Tauri Windows em perfil isolado, com 128 testes locais aprovados. Calendário persistente e Meta continuam nas fases 06–09. Nenhuma publicação externa é executada.
 
 ## Pré-requisitos
 
@@ -131,4 +131,8 @@ Diretrizes visuais e contratos dos componentes em [Design system](docs/DESIGN_SY
 - [Entrega e validação da Fase 04](docs/FASE_04_INTEGRACAO_TRELLO.md).
 - [Instruções persistentes para agentes](AGENTS.md).
 
-Não avançar automaticamente para a Fase 05. Não executar publicação externa sem autorização explícita. Git ignora dependências, builds, bancos operacionais, mídias e segredos; não há push automático.
+Não avançar automaticamente para a Fase 06. Não executar publicação externa sem autorização explícita. Git ignora dependências, builds, bancos operacionais, mídias e segredos; não há push automático.
+
+## Revisão editorial
+
+Abra Revisão, filtre a fila e entre em uma publicação. Confira mídia/legenda, edite se necessário e escolha Aprovar ou Ignorar; motivo e observação são opcionais. Aprovadas/ignoradas podem retornar à revisão. Editar uma decisão já tomada exige nova revisão ao salvar. Na listagem, selecione itens e confirme a ação em lote; erros são informados por item. Consulte Histórico para transições e versões. Setas navegam fora dos campos; Escape fecha diálogos. O aplicativo oferece salvar, descartar ou permanecer ao sair com alterações. Aprovação é exclusivamente editorial, sem agendar/publicar.

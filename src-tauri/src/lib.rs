@@ -14,6 +14,10 @@ mod editorial_repository;
 mod editorial_tests;
 mod error;
 mod media_store;
+mod review;
+#[cfg(test)]
+mod review_tests;
+use review::*;
 
 use database::FoundationStatus;
 use editorial_domain::*;
@@ -24,6 +28,29 @@ use tauri::Manager;
 use tauri_plugin_dialog::DialogExt;
 
 struct DatabaseState(Mutex<Result<EditorialRepository, AppError>>);
+
+#[tauri::command]
+async fn review_list(app: tauri::AppHandle, query: ReviewQuery) -> Result<ReviewPage, AppError> {
+    with_repository(app, move |r| r.review_list(query)).await
+}
+#[tauri::command]
+async fn review_get(app: tauri::AppHandle, id: String) -> Result<ReviewItem, AppError> {
+    with_repository(app, move |r| r.review_item(&id, true)).await
+}
+#[tauri::command]
+async fn review_decide(
+    app: tauri::AppHandle,
+    input: ReviewDecision,
+) -> Result<Vec<DecisionResult>, AppError> {
+    with_repository(app, move |r| r.review_decide(input)).await
+}
+#[tauri::command]
+async fn review_history(
+    app: tauri::AppHandle,
+    query: HistoryQuery,
+) -> Result<HistoryPage, AppError> {
+    with_repository(app, move |r| r.review_history(query)).await
+}
 
 #[tauri::command]
 async fn foundation_status(
@@ -190,6 +217,10 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            review_list,
+            review_get,
+            review_decide,
+            review_history,
             foundation_status,
             publication_list,
             publication_get,
