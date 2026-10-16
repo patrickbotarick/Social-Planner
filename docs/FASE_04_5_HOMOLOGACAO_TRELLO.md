@@ -1,6 +1,6 @@
 # Fase 04.5 — Homologação real do Trello
 
-Estado mais recente — 04.5C: importação autorizada de dois vídeos e quatro imagens, prévias, reprodução, sincronização repetida e melhoria de legenda aprovadas. **Aceite final aguardando apenas a conferência após reabertura no contexto operacional.** O usuário foi solicitado a reabrir o executável; o aplicativo continua fechado na última inspeção. A seção 04.5B abaixo preserva o registro histórico.
+Estado mais recente — 04.5C: **concluída em 16/10/2026; Fase 04 homologada no Windows para o escopo implementado.** Importação autorizada de dois vídeos e quatro imagens, prévias, reprodução, sincronização repetida, melhoria de legenda e persistência após reabertura aprovadas. Dados anteriores preservados. A Fase 05 não foi iniciada. A seção 04.5B abaixo preserva o registro histórico.
 
 Atualização: 16/10/2026, correção 04.5B. **Concluída: publicação operacional recuperada, imagem exibida, segunda sincronização sem duplicação e persistência após reabertura confirmada.** A importação real de imagem e a recuperação deste cartão estão homologadas. Esta etapa não inicia a Fase 05; vídeo e múltiplas mídias reais permanecem pendências da homologação ampliada da Fase 04.
 
@@ -87,7 +87,7 @@ Critérios da Fase 04.5B atendidos. Commit desta entrega: `fix: support secure T
 
 Vídeo e múltiplas mídias em cartões reais dependem de confirmação antes de importar cartões adicionais. Marcadores Markdown como `**` continuam exibidos literalmente; a legenda original é preservada e a apresentação será tratada futuramente, fora desta correção. A Fase 05 não foi iniciada.
 
-## Fase 04.5C — homologação ampliada (em andamento)
+## Fase 04.5C — homologação ampliada concluída
 
 Solicitada em 16/10/2026. Base Git limpa no commit `47d9851`. A consulta autenticada somente leitura confirmou 5 listas e 82 cartões. O diagnóstico opt-in `inspect_authorized_media_candidates` lê metadados pelo transporte de produção, não baixa anexos nem grava o banco operacional e não registra URLs assinadas. A inspeção passou (1 teste remoto). Snapshots anteriores e o snapshot de segurança desta etapa confirmaram as duas publicações e a mídia existentes integralmente preservadas.
 
@@ -151,6 +151,14 @@ Nenhum texto persistido é reescrito. O editor continua recebendo a string integ
 - Novas regressões: negrito/escapes, Unicode/quebras, HTML e links maliciosos inertes, delimitadores incompletos, vários trechos e cópia integral das duas versões sem gravação editorial.
 - Build desktop: aprovado (`npm.cmd run build:desktop`, release sem bundle). A primeira tentativa encontrou o executável em uso; após o usuário disponibilizar a sessão, o GMAD foi fechado normalmente e o build repetido passou. O novo executável foi aberto no contexto operacional e a melhoria de legenda foi conferida visualmente: negrito, quebras e hashtags corretos, sem reescrever o banco.
 
-Importação, reprodução, prévias e segunda sincronização reais aprovadas. Falta somente a conferência final de persistência após reabertura para encerrar o aceite ampliado. Não houve alterações no Trello remoto ou início da Fase 05.
+### Persistência e aceite final
 
-Versionamento desta preparação: `test: finalize Trello media import validation` (consultar histórico Git). O aceite depende dos resultados reais registrados nesta seção. Somente código, regressões e documentação são incluídos. Sem push ou tag; dados e snapshots permanecem fora do Git.
+O usuário reabriu o executável release no contexto operacional. O novo processo iniciou às 16:33:45 (hora de São Paulo), após o fechamento normal do processo anterior. Dashboard e biblioteca confirmaram cinco publicações pendentes de revisão. As prévias das imagens e as contagens 1/2/3 das novas publicações foram preservadas; o vídeo isolado abriu novamente com quadro decodificado e duração 0:58. O texto formatado permaneceu correto.
+
+A cópia somente leitura do SQLite aberto pelo novo processo foi verificada novamente contra os snapshots inicial e posterior à importação: IDs, legendas, estados, versões, vínculos e ordem idênticos; metadados e anexos preexistentes preservados. Sete arquivos físicos, sete MediaAssets e cinco publicações; tamanhos e SHA-256 dos sete arquivos conferidos novamente, sem duplicações. `quick_check=ok`, sem violações de chave estrangeira. **Persistência aprovada e aceite da Fase 04 concluído para o escopo implementado.**
+
+Limites remanescentes: a composição mista exige decisão editorial antes de uso; os dois codecs selecionados foram reproduzidos, sem afirmar compatibilidade universal de MP4; áudio não foi certificado. Markdown completo/editor rico permanece fora do escopo. A publicação preexistente “1” permaneceu com zero mídias, conforme seu estado inicial, sem tentativa de recuperação fora da seleção autorizada. A diferença de contexto ao abrir pela automação continua documentada; a homologação utilizou o contexto operacional correto. Nenhum desses limites representa falha dos downloads, vínculos ou persistência homologados.
+
+Não houve alterações no Trello remoto ou início da Fase 05.
+
+Versionamento: `1ecc3b7 — test: finalize Trello media import validation` registra código, regressões e verificações anteriores à reabertura. O encerramento documental após a conferência final está em commit complementar (consultar histórico Git). Somente código, regressões e documentação são incluídos. Sem push ou tag; dados e snapshots permanecem fora do Git.
