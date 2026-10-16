@@ -1,5 +1,6 @@
 mod trello_api;
 mod trello_domain;
+mod trello_redirect;
 mod trello_repository;
 mod trello_service;
 #[cfg(test)]

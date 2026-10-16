@@ -40,6 +40,8 @@ fn response(status: u16, data: Vec<u8>) -> HttpResponse {
         status,
         length: Some(data.len() as u64),
         retry_after: None,
+        location: None,
+        content_type: None,
         body: Box::new(Cursor::new(data)),
     }
 }
@@ -348,6 +350,81 @@ fn external_links_are_references_never_downloaded() {
     assert!(t.calls.is_empty());
 }
 #[test]
+fn failed_attachment_recovery_and_explicit_composition_are_idempotent() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut r = EditorialRepository::open(dir.path()).unwrap();
+    let mut c = card(14);
+    c.attachments.push(attachment(14, "recovered.png"));
+    let p = preview(&r, vec![c.clone()]);
+    let failed = run(
+        &mut r,
+        &p,
+        &mut Mock::new(vec![response(302, vec![])]),
+        &AtomicBool::new(false),
+    );
+    assert_eq!(failed.attachment_failures, 1);
+    let id = publication(&r, &c.id);
+    r.save(SavePublication {
+        id: Some(id.clone()),
+        expected_version: Some(1),
+        title: "Título local preservado".into(),
+        caption: "Legenda local **literal** 😊".into(),
+        format: PublicationFormat::Feed,
+        media_ids: vec![],
+    })
+    .unwrap();
+    let before = r.get(&id).unwrap();
+    let recovered = run(
+        &mut r,
+        &p,
+        &mut Mock::new(vec![response(200, png(14))]),
+        &AtomicBool::new(false),
+    );
+    assert_eq!(recovered.new_publications, 0);
+    assert_eq!(recovered.downloaded_attachments, 1);
+    assert_eq!(recovered.attachment_failures, 0);
+    let asset = r.trello_source(&id).unwrap().unwrap().attachments[0]
+        .media
+        .clone()
+        .unwrap();
+    // A recuperação não substitui a composição local: inclusão explícita pelo editor.
+    assert!(r.get(&id).unwrap().media.is_empty());
+    r.save(SavePublication {
+        id: Some(id.clone()),
+        expected_version: Some(before.version),
+        title: before.title.clone(),
+        caption: before.caption.clone(),
+        format: PublicationFormat::Feed,
+        media_ids: vec![asset.id.clone()],
+    })
+    .unwrap();
+    let version = r.get(&id).unwrap().version;
+    let again = run(&mut r, &p, &mut Mock::new(vec![]), &AtomicBool::new(false));
+    assert_eq!(again.new_publications, 0);
+    assert_eq!(again.downloaded_attachments, 0);
+    assert_eq!(again.attachment_failures, 0);
+    let after = r.get(&id).unwrap();
+    assert_eq!(after.id, before.id);
+    assert_eq!(after.title, before.title);
+    assert_eq!(after.caption, before.caption);
+    assert_eq!(after.editorial_status, before.editorial_status);
+    assert_eq!(after.format, before.format);
+    assert_eq!(after.created_at, before.created_at);
+    assert_eq!(after.version, version);
+    assert_eq!(after.media.len(), 1);
+    assert_eq!(after.media[0].id, asset.id);
+    assert_eq!(r.counts().unwrap().total, 1);
+    assert_eq!(std::fs::read_dir(&r.storage.directory).unwrap().count(), 1);
+    assert_eq!(
+        r.database
+            .connection
+            .query_row("SELECT count(*) FROM media_assets", [], |row| row
+                .get::<_, u32>(0))
+            .unwrap(),
+        1
+    );
+}
+#[test]
 fn invalid_file_partial_import_and_retry_preserve_success() {
     let dir = tempfile::tempdir().unwrap();
     let mut r = EditorialRepository::open(dir.path()).unwrap();
@@ -498,6 +575,8 @@ fn interrupted_stream_is_failure_and_cleans_partial() {
         status: 200,
         length: Some(100),
         retry_after: None,
+        location: None,
+        content_type: None,
         body: Box::new(Cursor::new(vec![1, 2, 3])),
     }]);
     assert!(download_asset(

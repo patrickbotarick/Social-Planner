@@ -87,7 +87,7 @@ Mídias em `media/<sha256>.<extensão>`, staging em `temp/imports/<sessão>`, so
 
 ## Integração Trello da Fase 04
 
-Os módulos trello_domain, trello_api, trello_vault, trello_service e trello_repository separam DTOs/validação, transporte oficial, credenciais, coordenação e SQLite. reqwest blocking com rustls atende somente endpoints construídos para api.trello.com por HTTPS; não há cliente HTTP no frontend. URLs de referência não são destinos de download. O transporte é substituível exclusivamente nos testes offline.
+Os módulos trello_domain, trello_api, trello_redirect, trello_vault, trello_service e trello_repository separam DTOs/validação, transporte oficial, política de redirecionamento, credenciais, coordenação e SQLite. reqwest blocking com rustls atende endpoints construídos para api.trello.com por HTTPS. Somente downloads de anexos podem seguir até três redirecionamentos para o host exato files.trello.com por HTTPS/443, usando cliente separado sem credenciais, validação de destino em cada salto e DNS público fixado na conexão. Não há cliente HTTP no frontend. URLs de referência não são destinos de download. O transporte é substituível exclusivamente nos testes offline. Regras completas em [Integração Trello](INTEGRACAO_TRELLO.md).
 
 TrelloState serializa operações, mantém a prévia em memória por 15 minutos, cancelamento atômico e progresso consultável. Comandos usam spawn_blocking. Rede, download e inspeção de arquivos ocorrem fora do mutex editorial; o checksum é reconferido dentro da transação por cartão antes de criar vínculos, protegendo contra arquivos modificados/revertidos por outra operação. Essa leitura de disco pode bloquear brevemente consultas locais, especialmente com vídeos grandes.
 

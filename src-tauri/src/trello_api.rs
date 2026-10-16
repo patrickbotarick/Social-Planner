@@ -46,6 +46,8 @@ pub struct HttpResponse {
     pub status: u16,
     pub length: Option<u64>,
     pub retry_after: Option<u64>,
+    pub location: Option<String>,
+    pub content_type: Option<String>,
     pub body: Box<dyn Read>,
 }
 pub trait Transport {
@@ -57,6 +59,7 @@ pub trait Transport {
 pub struct OfficialTransport {
     client: Client,
     authorization: HeaderValue,
+    timeout: Duration,
 }
 impl OfficialTransport {
     pub fn new(credentials: &Credentials, timeout: u64) -> Result<Self, AppError> {
@@ -70,6 +73,7 @@ impl OfficialTransport {
                 .build()
                 .map_err(|_| error("TRELLO_NETWORK"))?,
             authorization: credentials.header()?,
+            timeout: Duration::from_secs(timeout),
         })
     }
 }
@@ -80,23 +84,48 @@ impl Transport for OfficialTransport {
             url::Url::parse("https://api.trello.com/1/").map_err(|_| error("TRELLO_URL"))?;
         url.set_path(&format!("/1/{path}"));
         self.pause(120); // no máximo ~8 chamadas/s; limite por token é 100/10s.
+        let started = std::time::Instant::now();
         let response = self
             .client
-            .get(url)
+            .get(url.clone())
             .query(query)
             .header(AUTHORIZATION, self.authorization.clone())
             .send()
             .map_err(|_| error("TRELLO_NETWORK"))?;
-        Ok(HttpResponse {
-            status: response.status().as_u16(),
-            length: response.content_length(),
-            retry_after: response
-                .headers()
-                .get("retry-after")
-                .and_then(|v| v.to_str().ok())
-                .and_then(|v| v.parse().ok()),
-            body: Box::new(response),
-        })
+        let response = http_response(response);
+        if crate::trello_redirect::is_download_path(path) {
+            crate::trello_redirect::follow_download(
+                response,
+                url,
+                started,
+                self.timeout,
+                crate::trello_redirect::fetch_file,
+            )
+        } else {
+            Ok(response)
+        }
+    }
+}
+pub(crate) fn http_response(response: reqwest::blocking::Response) -> HttpResponse {
+    HttpResponse {
+        status: response.status().as_u16(),
+        length: response.content_length(),
+        retry_after: response
+            .headers()
+            .get("retry-after")
+            .and_then(|v| v.to_str().ok())
+            .and_then(|v| v.parse().ok()),
+        location: response
+            .headers()
+            .get("location")
+            .and_then(|v| v.to_str().ok())
+            .map(str::to_owned),
+        content_type: response
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .map(str::to_owned),
+        body: Box::new(response),
     }
 }
 pub fn status_error(status: u16) -> AppError {
@@ -328,6 +357,50 @@ pub fn download(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    #[ignore = "download remoto opt-in; cofre existente, armazenamento temporário, sem alterar banco operacional"]
+    fn verify_authorized_attachment_download() {
+        use crate::trello_vault::{Vault, WindowsVault};
+        assert_eq!(std::env::var("GMAD_LIVE_TRELLO_DIAG").as_deref(), Ok("1"));
+        let card_id = std::env::var("GMAD_LIVE_TRELLO_CARD_ID").expect("explicit remote ID");
+        let attachment_id =
+            std::env::var("GMAD_LIVE_TRELLO_ATTACHMENT_ID").expect("explicit attachment ID");
+        assert!(remote_id(&card_id) && remote_id(&attachment_id));
+        let credentials = WindowsVault
+            .load()
+            .expect("vault read")
+            .expect("configured credential");
+        let mut api = OfficialTransport::new(&credentials, 120).expect("transport");
+        let attachment: Attachment = json(
+            &mut api,
+            &format!("cards/{card_id}/attachments/{attachment_id}"),
+            &[],
+            &AtomicBool::new(false),
+        )
+        .expect("attachment metadata");
+        assert_eq!(attachment.id, attachment_id);
+        let dir = tempfile::tempdir().unwrap();
+        let mut store = crate::media_store::MediaStore::open(dir.path()).unwrap();
+        let media = crate::trello_service::download_asset(
+            &mut api,
+            &mut store,
+            &card_id,
+            &attachment,
+            &DownloadLimits::default(),
+            &AtomicBool::new(false),
+            &mut |_| {},
+        )
+        .expect("validated download");
+        assert_eq!(media.size_bytes, attachment.bytes);
+        assert_eq!(
+            crate::media_store::checksum(&store.path(&media.storage_path).unwrap()).unwrap(),
+            media.checksum
+        );
+        println!(
+            "download_validated bytes={} mime={} dimensions={:?}x{:?} sha256={}",
+            media.size_bytes, media.mime_type, media.width, media.height, media.checksum
+        );
+    }
     #[test]
     fn credential_header_is_sensitive_and_never_a_query_parameter() {
         let c = Credentials {
