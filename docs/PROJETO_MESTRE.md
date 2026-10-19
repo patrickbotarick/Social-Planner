@@ -91,9 +91,9 @@ Verde profundo, branco, cinza e detalhe laranja formam a identidade do software 
 
 **Trello (Fase 04, implementada e homologada nas etapas 04.5B/04.5C):** chave/token do fluxo oficial 1/authorize com scope=read, guardados no Windows Credential Manager; leitura de quadros, cartões e anexos; paginação, limites de taxa, timeout, retentativas limitadas, cancelamento e importação incremental idempotente. Validar URLs e destinos de download no Rust, tamanho/tipo de arquivo e integridade. Nenhuma integração ativa na Fase 01.
 
-**Meta (Fase 07):** pesquisar os requisitos vigentes de contas profissionais, vínculo de ativos, permissões, aprovação do aplicativo e autorização externa nas fontes oficiais. A escolha entre fluxos oficiais de login e publicação depende dessa pesquisa; requisitos específicos ainda não foram validados. Não se assume suporte a criar agendamentos no Meta Business Suite por API.
+**Meta (Fase 07 — pesquisa documental concluída em 19/10/2026):** referências oficiais v26.0 confirmam publicação imediata com restrições. Não foi localizado contrato público de agendamento Instagram futuro por API. Recomendado preparar localmente e programar manualmente no Business Suite, sujeito à escolha do usuário. A conta GMAD, OAuth e publicação reais não foram homologados; integração não implementada. Fontes em FASE_07_VIABILIDADE_META.md, contratos em INTEGRACAO_META.md e recomendação em DECISAO_AGENDAMENTO_META.md.
 
-Prova técnica futura deve registrar versões, fontes oficiais, formatos suportados, limites, expiração, ciclo de containers, agendamento servidor/plataforma, consulta de status e comportamento com o PC desligado. Só então decidir integração e UX. Se APIs oficiais não atenderem, fornecer preparação local e fluxo assistido no Business Suite, sem automação de navegador e sem prometer execução offline de chamadas externas.
+Prova documental registra versão, fontes, formatos, quotas inconsistentes, expiração e estados de contêineres. Upload de vídeo retomável não comprova upload binário de imagem; imagens por API dependem de URL pública. OAuth com App Secret exige troca no servidor, sem embutir segredo no cliente; token administrativo do painel para conta própria é alternativa documentada, ainda não configurada. Não tornar hospedagem/relay/servidor obrigatório sem nova decisão. No caminho assistido, o GMAD pode ser desligado depois que o operador efetivamente programa na interface Meta; isso não é sincronização automática nem confirmação pela API. Nenhuma autenticação/publicação real sem autorização específica.
 
 ## 8. Roadmap oficial
 
@@ -105,7 +105,7 @@ Prova técnica futura deve registrar versões, fontes oficiais, formatos suporta
 | 04 — Integração Trello | Autorização, cartões, anexos e importação incremental | 03; acesso oficial ao Trello | Importação repetível sem duplicação; falhas e limites tratados | Homologada em 16/10/2026: imagem, vídeos e múltiplas mídias reais; repetição idempotente, preservação editorial e persistência após reabertura aprovadas |
 | 05 — Revisão e aprovação | Decisões, histórico e validação editorial | 03 e 04 | Transições válidas e rastreáveis por versão | Implementada e validada no Windows em perfil isolado; 128 testes locais aprovados, verificações e builds; evidências em FASE_05_REVISAO_EDITORIAL.md |
 | 06 — Calendário mensal | Planejamento local com fuso e conflitos | 05 | Agendar/replanejar localmente sem alegar confirmação Meta | Concluída tecnicamente em 19/10/2026: 152 testes, builds, Tauri em três resoluções, arraste, cancelamento e persistência aprovados em QA isolado |
-| 07 — Pesquisa e integração Meta | Prova técnica oficial e decisão de viabilidade | 06; conta profissional e autorização externa | Evidências oficiais e estratégia validada, inclusive alternativa assistida | Não iniciada |
+| 07 — Pesquisa e integração Meta | Prova técnica oficial e decisão de viabilidade | 06; conta profissional e autorização externa | Evidências oficiais e estratégia validada, inclusive alternativa assistida | Pesquisa documental concluída em 19/10/2026; recomendado Business Suite manual assistido; escolha do usuário e homologação da conta pendentes. Integração não implementada |
 | 08 — Agendamento e acompanhamento | Executar estratégia validada e reconciliar eventos | 07 | Estados reais separados, retentativas seguras e confirmação auditável | Não iniciada |
 | 09 — Testes e distribuição | Endurecimento, recuperação e distribuição Windows | 01–08 | Testes de ponta a ponta, instalação/atualização e recuperação validados | Não iniciada |
 
@@ -125,6 +125,9 @@ Não iniciar outra fase sem solicitação. Detalhes de aceite e acompanhamento e
 
 ## 10. Documentos complementares
 
+- [Fase 07](FASE_07_VIABILIDADE_META.md): fontes oficiais, capacidades e limites de viabilidade.
+- [Integração Meta](INTEGRACAO_META.md): autenticação, mídia, segurança e contratos futuros.
+- [Decisão de agendamento Meta](DECISAO_AGENDAMENTO_META.md): alternativas e recomendação para avaliação do usuário.
 - [Fase 06](FASE_06_CALENDARIO_EDITORIAL.md): calendário, modelo local, fuso, conflitos, histórico, testes e homologação Windows.
 - [Fase 05](FASE_05_REVISAO_EDITORIAL.md): revisão, decisões, histórico, testes e homologação Windows isolada.
 - [Integração Trello](INTEGRACAO_TRELLO.md): conexão, segurança, API, importação e limites.

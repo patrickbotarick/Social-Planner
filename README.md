@@ -2,7 +2,7 @@
 
 Aplicativo Windows local-first para organizar o conteúdo editorial de Instagram da GMAD Rio Preto, recebido mensalmente do Trello da matriz.
 
-**Estado:** Fases 01–05 validadas, incluindo [homologação Trello real](docs/FASE_04_5_HOMOLOGACAO_TRELLO.md) e [revisão editorial](docs/FASE_05_REVISAO_EDITORIAL.md). A [Fase 06](docs/FASE_06_CALENDARIO_EDITORIAL.md) implementa calendário persistente, reagendamento, conflitos e histórico local: 152 testes aprovados, builds e persistência no Tauri Windows. Cancelamento nativo e persistência homologados no QA, preservando publicações e mídias; aceite técnico concluído. Meta continua nas fases 07–09. Nenhuma publicação externa é executada.
+**Estado:** Fases 01–05 validadas, incluindo [homologação Trello real](docs/FASE_04_5_HOMOLOGACAO_TRELLO.md) e [revisão editorial](docs/FASE_05_REVISAO_EDITORIAL.md). A [Fase 06](docs/FASE_06_CALENDARIO_EDITORIAL.md) implementa calendário persistente, reagendamento, conflitos e histórico local: 152 testes aprovados, builds e persistência no Tauri Windows. Cancelamento nativo e persistência homologados no QA, preservando publicações e mídias; aceite técnico concluído. A Fase 07 concluiu a pesquisa documental de viabilidade Meta, recomendando preparação local e agendamento manual no Business Suite; integração não implementada e conta real não homologada. Fases 08–09 não iniciadas. Nenhuma publicação externa é executada.
 
 ## Pré-requisitos
 
@@ -117,6 +117,9 @@ Diretrizes visuais e contratos dos componentes em [Design system](docs/DESIGN_SY
 
 ## Documentação oficial
 
+- [Viabilidade Meta — Fase 07](docs/FASE_07_VIABILIDADE_META.md).
+- [Contratos futuros da integração Meta](docs/INTEGRACAO_META.md).
+- [Decisão recomendada de agendamento](docs/DECISAO_AGENDAMENTO_META.md).
 - [Projeto mestre](docs/PROJETO_MESTRE.md) — fonte de escopo e contratos.
 - [Arquitetura](docs/ARQUITETURA.md).
 - [Modelo de dados](docs/MODELO_DADOS.md).
@@ -131,7 +134,7 @@ Diretrizes visuais e contratos dos componentes em [Design system](docs/DESIGN_SY
 - [Entrega e validação da Fase 04](docs/FASE_04_INTEGRACAO_TRELLO.md).
 - [Instruções persistentes para agentes](AGENTS.md).
 
-Não avançar automaticamente para a Fase 07. Não executar publicação externa sem autorização explícita. Git ignora dependências, builds, bancos operacionais, mídias e segredos; push exige autorização (fornecida especificamente para a entrega da Fase 06 após validação e auditoria).
+Não avançar automaticamente para a Fase 08. Não executar publicação externa sem autorização explícita. Git ignora dependências, builds, bancos operacionais, mídias e segredos; push exige autorização (fornecida especificamente para as entregas das Fases 06 e 07 após validação e auditoria).
 
 ## Revisão editorial
 
