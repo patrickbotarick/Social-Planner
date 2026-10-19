@@ -118,3 +118,23 @@ Rust valida calendário, fuso/DST, futuro, composição e integridade de arquivo
 ## Fase 07 — contratos externos apenas propostos
 
 A pesquisa Meta não adiciona tabelas, enums, migrações ou dados. O planejamento implementado continua exclusivamente em planned_local/cancelled_local/invalidated_local. Estados externos citados conceitualmente neste documento não representam operações disponíveis. Preparação, declaração de programação manual e confirmação real de API deverão ter registros separados, com versões/hashes e origem da evidência; nunca reutilizar schedule_events como prova de publicação. Contratos e decisão ainda sujeitos à escolha do usuário em [Integração Meta](INTEGRACAO_META.md) e [Decisão de agendamento](DECISAO_AGENDAMENTO_META.md).
+
+## Preparação e declaração manual — migração 006
+
+Implementadas na Fase 08 por solicitação posterior à pesquisa. Não alteram os enums editoriais/de planejamento, não criam prova de API e não modificam 001–005.
+
+| Tabela | Contrato implementado |
+| --- | --- |
+| export_roots | UUID, caminho canônico local UNIQUE autorizado no seletor nativo, created_at UTC. Raízes anteriores são conservadas. |
+| assisted_settings | Singleton id=1 e FK root_id opcional para preferência de novas exportações. |
+| preparations | UUID; FKs publication_id/schedule_id/root_id RESTRICT; versões editorial/plano; fingerprint SHA-256; estado preparing/prepared/outdated/preparation_failed; caminho relativo; regenerated_from FK opcional; error_code; created_at/updated_at UTC. UNIQUE raiz/caminho e índice único parcial por plano em preparing/prepared. |
+| assisted_confirmations | UUID e FKs publicação/plano/preparação RESTRICT; versões/fingerprint; snapshots planejado e efetivo, cada um com data/hora/fuso/UTC; platform=instagram; format; referência/observação; estado confirmed_manually/requires_review/superseded; versão otimista e confirmed_at UTC. Uma não substituída por plano **e publicação**. |
+| assisted_events | ID INTEGER, FKs publicação/plano/pacote/declaração, tipo de evento e created_at UTC. Histórico imutável e indexado por recência. |
+
+Sem registro de preparação significa `not_prepared`; sem declaração significa `not_confirmed`. São projeções, sem linhas artificiais. `preparing` é transitório interno. O estado da publicação não é promovido após exportar/confirmar. Divergência considera diferença entre instantes UTC ou uma declaração `requires_review`, sem criar novo estado editorial. Histórico mantém IDs e datas, sem copiar a legenda ou payloads externos.
+
+Triggers exigem aprovação/planejamento na versão exata ao iniciar/concluir preparação e ao declarar. Proíbem apagar preparações/declarações/eventos, modificar snapshots ou reabrir preparações encerradas. Eventos de transição são atômicos; alteração editorial ou de plano torna pacotes outdated e declarações requires_review na transação existente. Se falhar a auditoria, toda a alteração SQL reverte. Nova revisão exige ID/versão da declaração ativa e transação imediata; substitui a anterior e cria novo snapshot confirmado. Declaração antiga continua consultável no banco e ligada aos eventos; novo plano da mesma publicação também exige revisar a anterior.
+
+`Reconciliar calendário` usa o contrato `schedule_save` existente com versões esperadas e horário/fuso efetivos do snapshot, sem atualizar a Meta. Isso invalida a preparação, exige regeneração e nova declaração. Referências opcionais são texto ou URLs HTTPS Meta estritamente validadas; não são credenciais nem destinos de rede.
+
+Manifesto exportado esquema 1 inclui IDs/versões, assinatura, formato, calendário/fuso/UTC, hash da legenda e mídia ordenada com nome seguro/asset_id/hash/bytes/MIME. Não inclui tokens ou URL de origem. Conteúdo completo continua no banco editorial e em legenda/mídias exportadas. O filesystem e SQLite têm recuperação em etapas, não transação única; detalhes em [Arquitetura](ARQUITETURA.md) e [Fase 08](FASE_08_AGENDAMENTO_ASSISTIDO.md).

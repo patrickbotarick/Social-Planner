@@ -51,10 +51,12 @@ pub(crate) fn with_preview(mut media: MediaAsset, storage: &MediaStore) -> Media
 
 impl EditorialRepository {
     pub fn open(data: &Path) -> Result<Self, AppError> {
-        Ok(Self {
+        let repository = Self {
             database: Repository::open(&data.join("planner.sqlite3"))?,
             storage: MediaStore::open(data)?,
-        })
+        };
+        repository.assisted_recover()?;
+        Ok(repository)
     }
 
     pub fn get(&self, id: &str) -> Result<Publication, AppError> {

@@ -990,7 +990,7 @@ fn prepare_native_qa_fixture() {
     let j = run(&mut r, &p, &mut t, &AtomicBool::new(false));
     assert_eq!(j.status, "completed");
     assert_eq!(r.counts().unwrap().pending_review, 3);
-    assert_eq!(r.database.status().unwrap().schema_version, 5);
+    assert_eq!(r.database.status().unwrap().schema_version, 6);
 }
 #[test]
 #[ignore = "teste Windows opt-in, usa e remove somente entrada exclusiva de QA"]

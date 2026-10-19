@@ -8,6 +8,7 @@ import { Card } from '../components/ui/Presentation';
 import { StorageStatus } from '../components/StorageStatus';
 import type { FoundationState } from '../types/foundation';
 import { PlanningSummary } from '../features/editorial/PlanningSummary';
+import { AssistedSummary } from '../features/editorial/AssistedSummary';
 
 export function Dashboard({ state, onRefresh }: { state: FoundationState; onRefresh: () => Promise<void> }) {
   const counts = useEditorialQuery(getEditorialCounts);
@@ -21,6 +22,7 @@ export function Dashboard({ state, onRefresh }: { state: FoundationState; onRefr
     <div className="dashboard-columns">
       <div className="dashboard-main">
         <PlanningSummary timezone={state.kind==='ready'?state.data.settings.timezone:'America/Sao_Paulo'}/>
+        <AssistedSummary timezone={state.kind==='ready'?state.data.settings.timezone:'America/Sao_Paulo'}/>
       </div>
       <div className="dashboard-aside"><Card aria-labelledby="shortcuts-title"><div className="card-heading"><h2 id="shortcuts-title">Seu fluxo de trabalho</h2></div>
         {[

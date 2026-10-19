@@ -1,4 +1,5 @@
 const paths: Record<string, string> = {
+  assistido: 'M4 4h16v16H4z M8 8h8 M8 12h5 m-4 4 2 2 5-5',
   dashboard: 'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
   biblioteca: 'M3 6h7l2 2h9v12H3z M3 6V4h7l2 2',
   importacoes: 'M12 3v12 m-5-5 5 5 5-5 M4 15v6h16v-6',

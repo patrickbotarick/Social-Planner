@@ -7,6 +7,7 @@ import './styles/global.css';
 import './styles/pages.css';
 import './styles/editorial.css';
 import './styles/calendar.css';
+import './styles/assisted.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Elemento raiz não encontrado.');

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-assisted-caption"
+description = "Enables the assisted_caption command without any pre-configured scope."
+commands.allow = ["assisted_caption"]
+
+[[permission]]
+identifier = "deny-assisted-caption"
+description = "Denies the assisted_caption command without any pre-configured scope."
+commands.deny = ["assisted_caption"]

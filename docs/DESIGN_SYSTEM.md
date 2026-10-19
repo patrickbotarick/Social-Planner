@@ -56,7 +56,7 @@ Espaçamentos: 4, 8, 12, 16, 20, 24, 32 e 40 px (`--space-1` a `--space-10`, con
 
 | Componente | Responsabilidade e uso |
 | --- | --- |
-| AppShell, Sidebar, Topbar | Estrutura da janela, oito rotas, contexto e diagnóstico real resumido. AppShell reaproveita `layouts/AppLayout.tsx`. |
+| AppShell, Sidebar, Topbar | Estrutura da janela, nove rotas, contexto e diagnóstico real resumido. AppShell reaproveita `layouts/AppLayout.tsx`. |
 | PageHeader, AvailabilityNote | Título, descrição, ação contextual e indicação da fase futura. |
 | Button, IconButton | Variantes primary/secondary/ghost/danger; tamanho normal/small; `type="button"` por padrão; nome obrigatório no botão de ícone. |
 | Input, Textarea, Select | Label associado por ID, descrição/erro via `aria-describedby`, erro via `aria-invalid`; atributos HTML nativos. |
@@ -75,7 +75,7 @@ Primitivos em `src/components/ui/`; estilos comuns em `src/styles/global.css`; c
 
 ## Estados e acessibilidade
 
-Controles futuros têm `disabled` nativo e orientação visível da fase. Atalhos de importação, criação e revisão navegam para os fluxos implementados; calendário persistente continua futuro. Loading, erro, prévia web e conexão real continuam distintos. Mensagens de erro são claras e não expõem falhas internas desconhecidas. Revisão usa erros impeditivos e avisos separados, sem depender apenas da cor; lotes exigem confirmação e mostram resultados por item.
+Controles futuros têm `disabled` nativo e orientação visível da fase. Importação, criação, revisão, calendário e preparação assistida navegam para fluxos implementados. Loading, erro, prévia web e conexão real continuam distintos. Mensagens de erro são claras e não expõem falhas internas desconhecidas. Revisão e preparação usam erros impeditivos e avisos separados, sem depender apenas da cor; lotes exigem confirmação e mostram resultados por item. A Fase 08 usa filtros recolhíveis, listas compactas e estados textuais independentes; declarações manuais nunca têm aparência de sucesso verificado pela API.
 
 Preservar skip link, landmarks, hierarquia de títulos, links reais, `aria-current` e mudança de foco/título ao navegar. O calendário possui 42 dias com datas completas acessíveis e `aria-current="date"` no dia atual; nenhuma célula vazia simula ação de agendamento. Campos não dependem apenas de placeholder.
 
@@ -85,7 +85,7 @@ Hover/focus/active usam alteração discreta de cor (120 ms). Respeitar `prefers
 
 ## Navegação e responsividade
 
-Sidebar com marca, unidade e grupos Planejamento (Dashboard/Biblioteca/Calendário), Conteúdo (Importações/Revisão/Nova publicação) e Acompanhamento (Histórico); Configurações permanece ao final. Seleção usa fundo suave, borda verde e peso de texto. Topbar pequena informa unidade, página e estado real do armazenamento.
+Sidebar com marca, unidade e grupos Planejamento (Dashboard/Biblioteca/Calendário/Preparar para Meta), Conteúdo (Importações/Revisão/Nova publicação) e Acompanhamento (Histórico); Configurações permanece ao final. Seleção usa fundo suave, borda verde e peso de texto. Topbar pequena informa unidade, página e estado real do armazenamento.
 
 Sidebar padrão 216 px; abaixo de 1100 px, 194 px. Conteúdo com `minmax(0, 1fr)`, largura máxima 1800 px e padding 20–36 px conforme viewport. Painéis e toolbars podem quebrar linhas; em janelas menores composições passam a uma coluna. Até 720 px a navegação vira faixa horizontal interna; o documento não deve transbordar horizontalmente. Scroll vertical permanece no documento; sidebar só rola quando necessário.
 

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-assisted-history"
+description = "Enables the assisted_history command without any pre-configured scope."
+commands.allow = ["assisted_history"]
+
+[[permission]]
+identifier = "deny-assisted-history"
+description = "Denies the assisted_history command without any pre-configured scope."
+commands.deny = ["assisted_history"]

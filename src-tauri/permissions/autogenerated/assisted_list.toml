@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-assisted-list"
+description = "Enables the assisted_list command without any pre-configured scope."
+commands.allow = ["assisted_list"]
+
+[[permission]]
+identifier = "deny-assisted-list"
+description = "Denies the assisted_list command without any pre-configured scope."
+commands.deny = ["assisted_list"]

@@ -9,6 +9,23 @@ import assert from 'node:assert/strict';
 const sql = readFileSync(new URL('../src-tauri/migrations/001_foundation.sql', import.meta.url), 'utf8');
 const editorialSql = readFileSync(new URL('../src-tauri/migrations/002_editorial_library.sql', import.meta.url), 'utf8');
 
+test('migração 006 preserva publicações, separa declarações, impede duplicação e audita divergência transacional',()=>{
+ const db=new DatabaseSync(':memory:');db.exec('PRAGMA foreign_keys=ON');db.exec(sql);db.exec(editorialSql);
+ for(const name of ['003_trello_import','004_editorial_review','005_local_calendar'])db.exec(readFileSync(new URL('../src-tauri/migrations/'+name+'.sql',import.meta.url),'utf8'));
+ db.exec("INSERT INTO publications(id,title,caption,search_text,format,editorial_status) VALUES('pub','Original','💚\nGMAD','original','feed','approved')");
+ db.exec("INSERT INTO schedules(id,publication_id,publication_version,scheduled_date,scheduled_time,timezone,scheduled_at_utc,status) VALUES('plan','pub',1,'2099-11-03','10:00','America/Sao_Paulo','2099-11-03T13:00:00Z','planned_local')");
+ const before=db.prepare('SELECT * FROM publications').get();db.exec(readFileSync(new URL('../src-tauri/migrations/006_assisted_planning.sql',import.meta.url),'utf8'));assert.deepEqual(db.prepare('SELECT * FROM publications').get(),before);
+ db.exec("INSERT INTO export_roots(id,path) VALUES('root','C:/QA'); UPDATE assisted_settings SET root_id='root';");
+ const signature='a'.repeat(64);db.prepare("INSERT INTO preparations(id,publication_id,schedule_id,publication_version,schedule_version,fingerprint,status,root_id,relative_path) VALUES('prep','pub','plan',1,1,?,'preparing','root','2099-11/pacote')").run(signature);db.exec("UPDATE preparations SET status='prepared'");
+ const confirmation=db.prepare("INSERT INTO assisted_confirmations(id,publication_id,schedule_id,preparation_id,publication_version,schedule_version,fingerprint,planned_date,planned_time,planned_timezone,planned_utc,actual_date,actual_time,actual_timezone,actual_utc,platform,format,status) VALUES(?,'pub','plan','prep',1,1,?,'2099-11-03','10:00','America/Sao_Paulo','2099-11-03T13:00:00Z','2099-11-03','11:00','America/Sao_Paulo','2099-11-03T14:00:00Z','instagram','feed','confirmed_manually')");
+ confirmation.run('manual',signature);assert.throws(()=>confirmation.run('duplicate',signature));assert.throws(()=>db.exec("UPDATE assisted_confirmations SET actual_time='12:00',version=2"));assert.throws(()=>db.exec("UPDATE preparations SET fingerprint='"+'b'.repeat(64)+"'"));assert.throws(()=>db.exec('DELETE FROM assisted_events'));
+ db.exec("CREATE TRIGGER reject_assisted BEFORE INSERT ON assisted_events WHEN NEW.event='package_outdated' BEGIN SELECT RAISE(ABORT,'test rollback'); END;");
+ assert.throws(()=>db.exec("UPDATE publications SET version=version+1"));assert.deepEqual(db.prepare('SELECT * FROM publications').get(),before);assert.equal(db.prepare('SELECT status FROM preparations').get().status,'prepared');
+ db.exec("DROP TRIGGER reject_assisted; UPDATE publications SET version=version+1");
+ assert.equal(db.prepare('SELECT status FROM preparations').get().status,'outdated');assert.equal(db.prepare('SELECT status FROM assisted_confirmations').get().status,'requires_review');assert.equal(db.prepare('SELECT status FROM schedules').get().status,'invalidated_local');assert.equal(db.prepare("SELECT count(*) n FROM assisted_events WHERE event='divergence_detected'").get().n,2);
+ assert.equal(db.prepare('PRAGMA quick_check').get().quick_check,'ok');assert.deepEqual(db.prepare('PRAGMA foreign_key_check').all(),[]);db.close();
+});
+
 test('calendário migra banco existente, exige aprovação, evita duplicação e invalida por versão com auditoria atômica', () => {
   const db=new DatabaseSync(':memory:');db.exec('PRAGMA foreign_keys=ON');db.exec(sql);db.exec(editorialSql);
   for(const name of ['003_trello_import','004_editorial_review']) db.exec(readFileSync(new URL(`../src-tauri/migrations/${name}.sql`,import.meta.url),'utf8'));

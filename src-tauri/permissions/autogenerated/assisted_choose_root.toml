@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-assisted-choose-root"
+description = "Enables the assisted_choose_root command without any pre-configured scope."
+commands.allow = ["assisted_choose_root"]
+
+[[permission]]
+identifier = "deny-assisted-choose-root"
+description = "Denies the assisted_choose_root command without any pre-configured scope."
+commands.deny = ["assisted_choose_root"]

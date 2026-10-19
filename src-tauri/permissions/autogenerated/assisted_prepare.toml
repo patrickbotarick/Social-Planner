@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-assisted-prepare"
+description = "Enables the assisted_prepare command without any pre-configured scope."
+commands.allow = ["assisted_prepare"]
+
+[[permission]]
+identifier = "deny-assisted-prepare"
+description = "Denies the assisted_prepare command without any pre-configured scope."
+commands.deny = ["assisted_prepare"]

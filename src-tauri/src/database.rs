@@ -31,6 +31,11 @@ const MIGRATIONS: &[(i64, &str, &str)] = &[
         "local_calendar",
         include_str!("../migrations/005_local_calendar.sql"),
     ),
+    (
+        6,
+        "assisted_planning",
+        include_str!("../migrations/006_assisted_planning.sql"),
+    ),
 ];
 
 #[derive(Debug, Serialize)]
@@ -200,7 +205,7 @@ mod tests {
                 .unwrap();
             assert_eq!(&applied, sql);
         }
-        assert_eq!(repository.status().unwrap().schema_version, 5);
+        assert_eq!(repository.status().unwrap().schema_version, 6);
     }
 
     #[test]
@@ -221,7 +226,7 @@ mod tests {
                 .unwrap();
         }
         let repository = Repository::open(&path).unwrap();
-        assert_eq!(repository.status().unwrap().schema_version, 5);
+        assert_eq!(repository.status().unwrap().schema_version, 6);
         assert_eq!(repository.settings().unwrap().timezone, "UTC");
         assert_eq!(repository.settings().unwrap().created_at, created);
         assert_eq!(
@@ -251,7 +256,7 @@ mod tests {
         let path = directory.path().join("test.sqlite3");
         {
             let repository = Repository::open(&path).unwrap();
-            assert_eq!(repository.status().unwrap().schema_version, 5);
+            assert_eq!(repository.status().unwrap().schema_version, 6);
             assert_eq!(repository.settings().unwrap().timezone, "America/Sao_Paulo");
             // Exercita persistência sem expor edição de configurações no IPC desta fase.
             repository
@@ -270,7 +275,7 @@ mod tests {
                 row.get(0)
             })
             .unwrap();
-        assert_eq!(count, 5);
+        assert_eq!(count, 6);
     }
 
     #[test]

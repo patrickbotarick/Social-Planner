@@ -14,6 +14,7 @@ import { Calendar } from '../pages/Calendar';
 import { NewPublication } from '../pages/NewPublication';
 import { PublicationDetails } from '../pages/PublicationDetails';
 import { History } from '../pages/History';
+import { Assisted } from '../pages/Assisted';
 import { UnsavedDialog } from '../components/ui/Modal';
 import { ToastProvider, useToast } from '../components/ui/Toast';
 import { editorialError } from '../services/editorial';
@@ -74,6 +75,7 @@ function Application() {
       case 'importacoes': return <Imports onGuard={onGuard} />;
       case 'revisao': return <Review onGuard={onGuard} />;
       case 'calendario': return <Calendar timezone={state.kind === 'ready' ? state.data.settings.timezone : 'America/Sao_Paulo'} onGuard={onGuard} />;
+      case 'assistido': return <Assisted timezone={state.kind === 'ready' ? state.data.settings.timezone : 'America/Sao_Paulo'} onGuard={onGuard} />;
       case 'nova-publicacao': return <NewPublication key={route} onGuard={onGuard} onCancel={() => { attempt(() => { window.location.hash = '#/biblioteca'; }); }} onSaved={publication => { window.location.hash = '#/biblioteca/'+publication.id; }} />;
       case 'historico': return <History />;
       case 'configuracoes': return <Settings state={state} onRefresh={refresh} />;

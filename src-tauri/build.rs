@@ -1,6 +1,15 @@
 fn main() {
     tauri_build::try_build(tauri_build::Attributes::new().app_manifest(
         tauri_build::AppManifest::new().commands(&[
+            "assisted_list",
+            "assisted_prepare",
+            "assisted_confirm",
+            "assisted_reconcile",
+            "assisted_history",
+            "assisted_caption",
+            "assisted_folder_open",
+            "assisted_business_open",
+            "assisted_choose_root",
             "calendar_list",
             "calendar_available",
             "schedule_save",

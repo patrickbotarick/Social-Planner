@@ -1,0 +1,11 @@
+import {invoke} from '@tauri-apps/api/core';
+import type {AssistedPage,AssistedQuery,AssistedHistoryPage,PreparationTarget,PreparationResult,ConfirmationInput} from '../types/assisted';
+export const assistedList=(query:AssistedQuery)=>invoke<AssistedPage>('assisted_list',{query});
+export const chooseExportRoot=()=>invoke<string|null>('assisted_choose_root');
+export const prepareAssisted=(targets:PreparationTarget[])=>invoke<PreparationResult[]>('assisted_prepare',{targets});
+export const confirmAssisted=(input:ConfirmationInput)=>invoke<string>('assisted_confirm',{input});
+export const reconcileAssisted=(input:{confirmationId:string;expectedVersion:number;scheduleVersion:number})=>invoke<void>('assisted_reconcile',{input});
+export const copyAssistedCaption=(id:string)=>invoke<string>('assisted_caption',{id});
+export const openAssistedFolder=(id:string)=>invoke<void>('assisted_folder_open',{id});
+export const openBusinessSuite=()=>invoke<void>('assisted_business_open');
+export const assistedHistory=(offset:number)=>invoke<AssistedHistoryPage>('assisted_history',{offset});

@@ -79,7 +79,7 @@ describe('Fundação editorial', () => {
     vi.mocked(getFoundationStatus).mockRejectedValueOnce({ code: 'DATABASE_INTEGRITY', message: 'detalhe sensível' }).mockResolvedValue(status);
     const user = userEvent.setup();
     render(<App />);
-    expect(await screen.findByRole('alert')).toHaveTextContent('A verificação do banco falhou');
+    expect(await screen.findByText('A verificação do banco falhou. Preserve os arquivos e procure suporte antes de continuar.')).toHaveAttribute('role','alert');
     expect(screen.queryByText('detalhe sensível')).not.toBeInTheDocument();
     await openStorage(user);
     await user.click(screen.getByRole('button', { name: 'Verificar novamente' }));

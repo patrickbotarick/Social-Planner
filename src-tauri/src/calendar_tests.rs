@@ -279,7 +279,7 @@ fn restart_preserves_schedule_rows_history_and_foreign_keys() {
     assert_eq!(r.calendar_list(query()).unwrap().total, 1);
     assert_eq!(r.schedule_history(0).unwrap().total, 1);
     assert_eq!(r.database.status().unwrap().integrity, "ok");
-    assert_eq!(r.database.status().unwrap().schema_version, 5);
+    assert_eq!(r.database.status().unwrap().schema_version, 6);
     assert!(!r
         .database
         .connection

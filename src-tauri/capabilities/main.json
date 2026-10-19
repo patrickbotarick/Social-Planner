@@ -6,6 +6,15 @@
     "main"
   ],
   "permissions": [
+    "allow-assisted-list",
+    "allow-assisted-prepare",
+    "allow-assisted-confirm",
+    "allow-assisted-reconcile",
+    "allow-assisted-history",
+    "allow-assisted-caption",
+    "allow-assisted-folder-open",
+    "allow-assisted-business-open",
+    "allow-assisted-choose-root",
     "allow-calendar-list",
     "allow-calendar-available",
     "allow-schedule-save",

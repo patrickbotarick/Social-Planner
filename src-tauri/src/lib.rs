@@ -20,8 +20,84 @@ mod review_tests;
 use review::*;
 mod calendar;
 use calendar::*;
+mod assisted;
+mod assisted_files;
 #[cfg(test)]
 mod calendar_tests;
+use assisted::*;
+#[cfg(test)]
+mod assisted_tests;
+
+#[tauri::command]
+async fn assisted_list(
+    app: tauri::AppHandle,
+    query: AssistedQuery,
+) -> Result<AssistedPage, AppError> {
+    with_repository(app, move |r| r.assisted_list(query)).await
+}
+#[tauri::command]
+async fn assisted_prepare(
+    app: tauri::AppHandle,
+    targets: Vec<PreparationTarget>,
+) -> Result<Vec<PreparationResult>, AppError> {
+    with_repository(app, move |r| r.assisted_prepare(targets)).await
+}
+#[tauri::command]
+async fn assisted_confirm(
+    app: tauri::AppHandle,
+    input: ConfirmationInput,
+) -> Result<String, AppError> {
+    with_repository(app, move |r| r.assisted_confirm(input)).await
+}
+#[tauri::command]
+async fn assisted_reconcile(app: tauri::AppHandle, input: ReconcileInput) -> Result<(), AppError> {
+    with_repository(app, move |r| r.assisted_reconcile(input)).await
+}
+#[tauri::command]
+async fn assisted_history(app: tauri::AppHandle, offset: u32) -> Result<AssistedHistory, AppError> {
+    with_repository(app, move |r| r.assisted_history(offset)).await
+}
+#[tauri::command]
+async fn assisted_caption(app: tauri::AppHandle, id: String) -> Result<String, AppError> {
+    with_repository(app, move |r| r.assisted_caption(&id)).await
+}
+async fn assisted_system_open(app: tauri::AppHandle, target: String) -> Result<(), AppError> {
+    let (sender, receiver) = std::sync::mpsc::channel();
+    app.run_on_main_thread(move || {
+        let _ = sender.send(assisted_files::system_open(&target));
+    })
+    .map_err(|_| AppError::file())?;
+    tauri::async_runtime::spawn_blocking(move || receiver.recv().map_err(|_| AppError::file())?)
+        .await
+        .map_err(|_| AppError::file())?
+}
+#[tauri::command]
+async fn assisted_folder_open(app: tauri::AppHandle, id: String) -> Result<(), AppError> {
+    let path = with_repository(app.clone(), move |r| r.assisted_folder(&id)).await?;
+    assisted_system_open(app, path).await
+}
+#[tauri::command]
+async fn assisted_business_open(app: tauri::AppHandle) -> Result<(), AppError> {
+    assisted_system_open(app, "https://business.facebook.com/".into()).await
+}
+#[tauri::command]
+async fn assisted_choose_root(app: tauri::AppHandle) -> Result<Option<String>, AppError> {
+    let picker = app.clone();
+    let selected = tauri::async_runtime::spawn_blocking(move || {
+        picker
+            .dialog()
+            .file()
+            .set_title("Escolha a pasta local de exportações GMAD")
+            .blocking_pick_folder()
+    })
+    .await
+    .map_err(|_| AppError::file())?;
+    let Some(selected) = selected else {
+        return Ok(None);
+    };
+    let path = selected.into_path().map_err(|_| AppError::file())?;
+    with_repository(app, move |r| r.assisted_choose_root(&path).map(Some)).await
+}
 
 use database::FoundationStatus;
 use editorial_domain::*;
@@ -266,6 +342,15 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            assisted_list,
+            assisted_prepare,
+            assisted_confirm,
+            assisted_reconcile,
+            assisted_history,
+            assisted_caption,
+            assisted_folder_open,
+            assisted_business_open,
+            assisted_choose_root,
             calendar_list,
             calendar_available,
             schedule_save,

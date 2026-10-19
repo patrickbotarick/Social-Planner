@@ -2,7 +2,7 @@
 
 Aplicativo Windows local-first para organizar o conteúdo editorial de Instagram da GMAD Rio Preto, recebido mensalmente do Trello da matriz.
 
-**Estado:** Fases 01–05 validadas, incluindo [homologação Trello real](docs/FASE_04_5_HOMOLOGACAO_TRELLO.md) e [revisão editorial](docs/FASE_05_REVISAO_EDITORIAL.md). A [Fase 06](docs/FASE_06_CALENDARIO_EDITORIAL.md) implementa calendário persistente, reagendamento, conflitos e histórico local: 152 testes aprovados, builds e persistência no Tauri Windows. Cancelamento nativo e persistência homologados no QA, preservando publicações e mídias; aceite técnico concluído. A Fase 07 concluiu a pesquisa documental de viabilidade Meta, recomendando preparação local e agendamento manual no Business Suite; integração não implementada e conta real não homologada. Fases 08–09 não iniciadas. Nenhuma publicação externa é executada.
+**Estado:** Fases 01–06 validadas e pesquisa Meta da Fase 07 concluída. A [Fase 08](docs/FASE_08_AGENDAMENTO_ASSISTIDO.md) implementa preparação individual/em lote, pacotes locais íntegros, declaração manual e reconciliação de horário, com Dashboard/histórico reais. 176 testes aprovados e builds frontend/desktop verificados. O agendamento é feito manualmente no Business Suite; o GMAD não envia nem publica conteúdo. Homologação de agendamento real na conta GMAD pendente para a Fase 09, que não foi iniciada.
 
 ## Pré-requisitos
 
@@ -87,6 +87,12 @@ Para cadastrar: Criar publicação → título, formato e legenda → Selecionar
 ## Importar do Trello
 
 Configure a conexão em Configurações → Trello seguindo o [guia de integração](docs/INTEGRACAO_TRELLO.md). Depois abra Importações, consulte a URL do quadro, confira a prévia/seleção e confirme. Os posts chegam como pendentes de revisão. Reimportar atualiza a origem separadamente, preservando o conteúdo local. Downloads que falham podem ser repetidos; anexos recuperados/novos ficam disponíveis em Origem Trello para inclusão explícita na composição. Não envie tokens pelo chat ou grave-os em arquivos.
+
+## Preparar para o Business Suite
+
+Aprove a versão editorial e planeje uma data futura no Calendário. Em **Preparar para Meta**, escolha a pasta no seletor Windows, confira os avisos e gere os pacotes individualmente ou em lote. Mídias ordenadas preservam os bytes originais; `legenda.txt` mantém UTF-8 e `informacoes.json` registra versões, datas e hashes sem credenciais.
+
+Use prévia, abertura da pasta e cópia da legenda; abra o Business Suite e conclua o agendamento diretamente na Meta. Somente depois registre a declaração explícita de conferência com data/hora/fuso efetivos. Divergências não alteram silenciosamente o Calendário. Mudanças posteriores exigem regeneração e nova conferência manual; pacotes e declarações anteriores são preservados. A declaração local não comprova sucesso pela API. [Guia e roteiro de homologação](docs/GUIA_AGENDAMENTO_META.md).
 
 ## Organização
 

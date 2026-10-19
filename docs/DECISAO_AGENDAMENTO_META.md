@@ -1,6 +1,6 @@
 # Decisão de agendamento Meta — ADR da Fase 07
 
-Data: 19/10/2026. **Recomendação técnica proposta ao usuário; implementação da Fase 08 não autorizada por este documento.** Fontes e limites em [Viabilidade](FASE_07_VIABILIDADE_META.md); contratos em [Integração Meta](INTEGRACAO_META.md).
+Data: 19/10/2026. **Recomendação original da Fase 07; o pedido posterior da Fase 08 escolheu e autorizou o caminho C, implementado em [Agendamento assistido](FASE_08_AGENDAMENTO_ASSISTIDO.md).** Este ADR não autoriza agendamentos reais. Fontes e limites da pesquisa em [Viabilidade](FASE_07_VIABILIDADE_META.md); contratos de API futura em [Integração Meta](INTEGRACAO_META.md).
 
 ## Problema e restrições
 

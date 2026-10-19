@@ -10,6 +10,8 @@ O produto completo permitirá importar, revisar, editar, criar, aprovar, planeja
 
 ### Restrições permanentes
 
+Atualização de 19/10/2026: a Fase 07 encerrou a pesquisa e o pedido da Fase 08 escolheu assistência manual. A Fase 08 entrega preparação, pacotes versionados, declarações humanas, divergências e reconciliação local, com 176 testes e builds aprovados, QA nativo e persistência. Não implementa API de publicação; homologação real de agendamento na GMAD permanece pendente para eventual Fase 09, que não foi iniciada. Evidências em [Fase 08](FASE_08_AGENDAMENTO_ASSISTIDO.md).
+
 - Local-first, sem login interno, Supabase, Firebase, servidor próprio, banco em nuvem ou serviço pago obrigatório.
 - Funcionalidades locais operam offline. Somente integrações externas exigirão internet.
 - Dados editoriais e arquivos de mídia permanecem no computador, fora da instalação.
@@ -56,8 +58,10 @@ Identificadores locais das entidades editoriais serão UUIDs gerados no Rust; ID
 | Publication | Documento editável do usuário; cartão de origem opcional, título, legenda, formato, versão e estado editorial. Uma publicação inicial por cartão; futuras variantes precisam de ação explícita e vínculo próprio. |
 | PublicationMedia | Associação N:N entre publicação e mídia; posição não negativa, única por publicação, e par publicação/mídia único. |
 | EditorialReview | Histórico imutável de revisão, motivo, estado anterior e novo, data e versão da publicação. Pertence à publicação. |
-| Schedule | Fase 06: intenção local, publicação/versão aprovada, data/hora local, UTC, fuso IANA, estado e versão otimista. No máximo um ativo por publicação. Modo oficial/assistido e evidências externas permanecem futuros. |
+| Schedule | Fase 06: intenção local, publicação/versão aprovada, data/hora local, UTC, fuso IANA, estado e versão otimista. No máximo um ativo por publicação. Preparação/declaração assistidas da Fase 08 usam registros separados, sem converter intenção local em prova externa. |
 | ScheduleEvent | Fase 06: auditoria local imutável de criação, reagendamento, cancelamento e invalidação, com instantes anteriores/novos e versões. |
+| Preparation / ExportRoot | Fase 08: snapshot com assinatura/versões, raiz escolhida no seletor, caminho relativo seguro, estado e vínculo de regeneração. Ausência significa não preparada. |
+| AssistedConfirmation / AssistedEvent | Fase 08: declaração manual explícita de Instagram, snapshots de instantes planejado/efetivo, formato e versões; uma ativa por publicação/plano. Eventos locais imutáveis; nenhuma prova por API. |
 | PublicationEvent | Eventos imutáveis de integração/publicação; publicação e agendamento opcionais conforme tipo, data, código, identificador externo e chave de deduplicação. Sem tokens ou payloads sensíveis. |
 | AppSettings | Preferências locais versionadas. Fase 01: registro único com fuso `America/Sao_Paulo` e datas de criação/atualização; sem segredos. |
 
@@ -77,7 +81,9 @@ Os estados abaixo pertencem a eixos distintos; não serão condensados num únic
 
 **Publicação real:** `not_published` → `published` apenas com identificador/evidência consultada da plataforma. Uma falha de envio não apaga uma publicação já comprovada. Falhas registram escopo, instante, código e possibilidade de nova tentativa; não se repetem envios cegamente.
 
-Fluxo assistido registra intenção local e ação humana; abrir Business Suite ou marcar uma tarefa como feita não equivale a confirmação pela API. Evidência manual deve ser identificada como tal. Depois de confirmação oficial efetiva, deseja-se independência do computador ligado; viabilidade permanece em aberto até Fase 07.
+Fluxo assistido registra intenção local e ação humana; abrir Business Suite ou marcar uma tarefa como feita não equivale a confirmação pela API. Evidência manual deve ser identificada como tal. A Fase 07 recomendou que o operador programe no Business Suite: depois do agendamento efetivo na plataforma, a execução não depende do GMAD ligado. A conta real continua sujeita à homologação operacional.
+
+**Preparação e declaração implementadas na Fase 08:** migração 006 adiciona raízes/preferência, preparações, declarações e eventos, preservando 001–005. Preparação ausente=`not_prepared`; `preparing` interno → `prepared`/`preparation_failed`; mudanças → `outdated`. Regeneração cria novo pacote, preservando o anterior. Declaração ausente=`not_confirmed`; checkbox explícito → `confirmed_manually`; alterações posteriores → `requires_review`; revisão substitui o snapshot anterior por `superseded`, conservando histórico. Divergência de horário não muda o calendário automaticamente; reconciliação explícita altera somente o plano local e exige regeneração e nova conferência. O Business Suite é operado manualmente e o GMAD pode ser fechado depois que o agendamento foi efetivamente confirmado na plataforma. Uma declaração local não comprova isso. Detalhes e limites no guia da Fase 08; nenhuma publicação real foi executada.
 
 ## 6. Interface
 
@@ -91,7 +97,7 @@ Verde profundo, branco, cinza e detalhe laranja formam a identidade do software 
 
 **Trello (Fase 04, implementada e homologada nas etapas 04.5B/04.5C):** chave/token do fluxo oficial 1/authorize com scope=read, guardados no Windows Credential Manager; leitura de quadros, cartões e anexos; paginação, limites de taxa, timeout, retentativas limitadas, cancelamento e importação incremental idempotente. Validar URLs e destinos de download no Rust, tamanho/tipo de arquivo e integridade. Nenhuma integração ativa na Fase 01.
 
-**Meta (Fase 07 — pesquisa documental concluída em 19/10/2026):** referências oficiais v26.0 confirmam publicação imediata com restrições. Não foi localizado contrato público de agendamento Instagram futuro por API. Recomendado preparar localmente e programar manualmente no Business Suite, sujeito à escolha do usuário. A conta GMAD, OAuth e publicação reais não foram homologados; integração não implementada. Fontes em FASE_07_VIABILIDADE_META.md, contratos em INTEGRACAO_META.md e recomendação em DECISAO_AGENDAMENTO_META.md.
+**Meta (Fase 07 — pesquisa documental; Fase 08 — assistência local):** referências oficiais v26.0 confirmam publicação imediata com restrições. Não foi localizado contrato público de agendamento Instagram futuro por API. O usuário solicitou e a Fase 08 implementa preparação local e declaração manual após o operador programar no Business Suite. Não há API Meta, OAuth ou envio automático implementados. A conta GMAD e um agendamento real continuam sem homologação operacional. Fontes em FASE_07_VIABILIDADE_META.md, contratos futuros em INTEGRACAO_META.md e implementação em FASE_08_AGENDAMENTO_ASSISTIDO.md.
 
 Prova documental registra versão, fontes, formatos, quotas inconsistentes, expiração e estados de contêineres. Upload de vídeo retomável não comprova upload binário de imagem; imagens por API dependem de URL pública. OAuth com App Secret exige troca no servidor, sem embutir segredo no cliente; token administrativo do painel para conta própria é alternativa documentada, ainda não configurada. Não tornar hospedagem/relay/servidor obrigatório sem nova decisão. No caminho assistido, o GMAD pode ser desligado depois que o operador efetivamente programa na interface Meta; isso não é sincronização automática nem confirmação pela API. Nenhuma autenticação/publicação real sem autorização específica.
 
@@ -105,8 +111,8 @@ Prova documental registra versão, fontes, formatos, quotas inconsistentes, expi
 | 04 — Integração Trello | Autorização, cartões, anexos e importação incremental | 03; acesso oficial ao Trello | Importação repetível sem duplicação; falhas e limites tratados | Homologada em 16/10/2026: imagem, vídeos e múltiplas mídias reais; repetição idempotente, preservação editorial e persistência após reabertura aprovadas |
 | 05 — Revisão e aprovação | Decisões, histórico e validação editorial | 03 e 04 | Transições válidas e rastreáveis por versão | Implementada e validada no Windows em perfil isolado; 128 testes locais aprovados, verificações e builds; evidências em FASE_05_REVISAO_EDITORIAL.md |
 | 06 — Calendário mensal | Planejamento local com fuso e conflitos | 05 | Agendar/replanejar localmente sem alegar confirmação Meta | Concluída tecnicamente em 19/10/2026: 152 testes, builds, Tauri em três resoluções, arraste, cancelamento e persistência aprovados em QA isolado |
-| 07 — Pesquisa e integração Meta | Prova técnica oficial e decisão de viabilidade | 06; conta profissional e autorização externa | Evidências oficiais e estratégia validada, inclusive alternativa assistida | Pesquisa documental concluída em 19/10/2026; recomendado Business Suite manual assistido; escolha do usuário e homologação da conta pendentes. Integração não implementada |
-| 08 — Agendamento e acompanhamento | Executar estratégia validada e reconciliar eventos | 07 | Estados reais separados, retentativas seguras e confirmação auditável | Não iniciada |
+| 07 — Pesquisa e integração Meta | Prova técnica oficial e decisão de viabilidade | 06; conta profissional e autorização externa | Evidências oficiais e estratégia validada, inclusive alternativa assistida | Pesquisa concluída; caminho assistido escolhido pelo pedido da Fase 08. API não implementada; conta real não homologada |
+| 08 — Agendamento e acompanhamento | Preparação e transferência assistidas, declaração manual e reconciliação local | 07 | Pacotes fiéis/versionados, idempotência, declaração explicitamente manual, divergência e histórico persistentes; conta real pode permanecer como pendência operacional | Implementada em 19/10/2026; 176 testes e builds aprovados. Evidências e aceite em FASE_08_AGENDAMENTO_ASSISTIDO.md; agendamento real pendente para 09 |
 | 09 — Testes e distribuição | Endurecimento, recuperação e distribuição Windows | 01–08 | Testes de ponta a ponta, instalação/atualização e recuperação validados | Não iniciada |
 
 Não iniciar outra fase sem solicitação. Detalhes de aceite e acompanhamento em ROADMAP.md.
@@ -125,6 +131,8 @@ Não iniciar outra fase sem solicitação. Detalhes de aceite e acompanhamento e
 
 ## 10. Documentos complementares
 
+- [Fase 08](FASE_08_AGENDAMENTO_ASSISTIDO.md): exportação, declarações, divergências, segurança, testes e validação Windows.
+- [Guia de agendamento Meta](GUIA_AGENDAMENTO_META.md): uso do fluxo e homologação operacional pendente.
 - [Fase 07](FASE_07_VIABILIDADE_META.md): fontes oficiais, capacidades e limites de viabilidade.
 - [Integração Meta](INTEGRACAO_META.md): autenticação, mídia, segurança e contratos futuros.
 - [Decisão de agendamento Meta](DECISAO_AGENDAMENTO_META.md): alternativas e recomendação para avaliação do usuário.

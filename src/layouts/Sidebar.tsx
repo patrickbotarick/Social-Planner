@@ -3,7 +3,7 @@ import type { Section } from '../app/navigation';
 import { Icon } from '../components/Icon';
 import styles from './AppShell.module.css';
 const groups = [
-  { label: 'Planejamento', ids: ['dashboard', 'biblioteca', 'calendario'] },
+  { label: 'Planejamento', ids: ['dashboard', 'biblioteca', 'calendario', 'assistido'] },
   { label: 'Conteúdo', ids: ['importacoes', 'revisao', 'nova-publicacao'] },
   { label: 'Acompanhamento', ids: ['historico'] },
 ];

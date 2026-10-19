@@ -5,8 +5,9 @@ export const sections = [
   { id: 'revisao', label: 'Revisão de publicações', short: 'Revisão', phase: '05', description: 'Selecione as campanhas que fazem sentido para a GMAD Rio Preto.' },
   { id: 'calendario', label: 'Calendário mensal', short: 'Calendário', phase: '06', description: 'Planeje a distribuição das publicações ao longo do mês.' },
   { id: 'nova-publicacao', label: 'Nova publicação', short: 'Criar publicação', phase: '03', description: 'Prepare conteúdos próprios da unidade.' },
-  { id: 'historico', label: 'Histórico', short: 'Histórico', phase: '08', description: 'Acompanhe eventos e confirmações reais de publicação.' },
+  { id: 'historico', label: 'Histórico', short: 'Histórico', phase: '08', description: 'Consulte decisões, planejamento local e declarações manuais.' },
   { id: 'configuracoes', label: 'Configurações', short: 'Configurações', phase: '01', description: 'Informações do aplicativo e armazenamento neste computador.' },
+  { id: 'assistido', label: 'Agendamento assistido', short: 'Preparar para Meta', phase: '08', description: 'Prepare pacotes e registre sua conferência manual no Business Suite.' },
 ] as const;
 
 export type Section = (typeof sections)[number];
