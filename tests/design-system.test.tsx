@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { Tabs } from '../src/components/ui/Tabs';
@@ -99,13 +99,14 @@ describe('Calendário visual, sem agendamento', () => {
   });
   it('navega meses, retorna ao mês atual e mantém agendamento indisponível', async () => {
     render(<Calendar timezone="America/Sao_Paulo" />);
-    const title = screen.getByRole('heading', { level: 2 }).textContent;
+    const calendar=screen.getByRole('region',{name:'Calendário editorial'});
+    const title = within(calendar).getByRole('heading', { level: 2 }).textContent;
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: 'Próximo mês' }));
-    expect(screen.getByRole('heading', { level: 2 }).textContent).not.toBe(title);
+    expect(within(calendar).getByRole('heading', { level: 2 }).textContent).not.toBe(title);
     await user.click(screen.getByRole('button', { name: 'Hoje' }));
-    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(title);
-    expect(screen.getByRole('button', { name: 'Planejar publicação' })).toBeDisabled();
+    expect(within(calendar).getByRole('heading', { level: 2 }).textContent).toBe(title);
+    expect(screen.getByRole('button', { name: 'Atualizar calendário' })).toBeDisabled();
     expect(screen.getAllByRole('listitem')).toHaveLength(42);
   });
 });

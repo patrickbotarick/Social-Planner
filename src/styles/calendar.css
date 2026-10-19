@@ -1,0 +1,45 @@
+.planning-notice { margin-bottom: var(--space-4); color: var(--color-text-secondary); font-size: var(--font-sm); }
+.planning-controls { display: grid; gap: var(--space-2); padding: var(--space-3) var(--space-4); }
+.planning-metrics { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; font-size: var(--font-sm); }
+.planning-metrics dd { margin: 0; font-weight: var(--weight-semibold); font-size: var(--font-section); }
+.planning-filters { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: var(--space-3); align-items: end; }
+.planning-filters .field, .planning-layout > *, .planning-main { min-width: 0; }
+.planning-layout { display: grid; grid-template-columns: minmax(0,1fr) 270px; gap: var(--space-4); margin-top: var(--space-4); align-items: start; }
+.planning-period { padding: var(--space-2) var(--space-4); }
+.planning-period .field { display: flex; align-items: center; gap: var(--space-3); max-width: 380px; }
+.planning-period .ui-input { width: 190px; }
+.planning-query { padding: var(--space-3); }
+.planning-grid .planning-day { display: flex; flex-direction: column; align-items: stretch; justify-content: start; gap: var(--space-1); min-height: 90px; padding: var(--space-1); }
+.planning-day-button { align-self: stretch; display: flex; justify-content: flex-end; cursor: pointer; border: 0; background: transparent; color: inherit; padding: 0; }
+.planning-day--selected { box-shadow: inset 0 0 0 2px var(--color-primary); }
+.planning-day--over { background: var(--color-warning-surface); box-shadow: inset 0 0 0 2px var(--color-warning); }
+.planning-chip { display: grid; gap: 2px; width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 4px; background: var(--color-surface); color: var(--color-text-primary); text-align: left; font-size: var(--font-xs); cursor: pointer; }
+.planning-chip strong, .planning-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.planning-chip[draggable=true], .planning-queue-row[draggable=true] { cursor: grab; }
+.planning-chip--cancelled_local { opacity: .65; text-decoration: line-through; }
+.planning-chip--invalidated_local { border-color: var(--color-danger); color: var(--color-danger); }
+.planning-chip--warning { border-color: var(--color-warning); }
+.planning-day-details { margin-top: var(--space-4); }
+.planning-day-details h2 { font-size: var(--font-lg); }
+.planning-row { display: grid; grid-template-columns: 52px minmax(0,1fr); gap: var(--space-3); padding-block: var(--space-3); border-bottom: 1px solid var(--color-border); overflow-wrap: anywhere; }
+.planning-row p { margin-block: var(--space-2); }
+.planning-thumbnail { width: 52px; }
+.planning-thumbnail .editorial-media-preview { width: 52px; height: 62px; min-height: 62px; border-radius: var(--radius-sm); }
+.planning-thumbnail .video-thumbnail { font-size: 0; }
+.planning-queue-row { display: grid; grid-template-columns: 52px minmax(0,1fr); gap: var(--space-3); border-top: 1px solid var(--color-border); padding-top: var(--space-3); overflow-wrap: anywhere; }
+.planning-queue-row p { margin-block: var(--space-1); }
+.planning-queue-row strong { font-size: var(--font-md); }
+.planning-available .card-heading { flex-wrap: wrap; }
+.planning-available h2 { font-size: var(--font-lg); }
+.planning-available .card-body { padding: var(--space-3); gap: var(--space-3); }
+.planning-warning { color: var(--color-warning); }
+.planning-dialog-thumbnail { max-width: 120px; }
+.planning-dialog-thumbnail .editorial-media-preview { height: 56px; min-height: 56px; }
+.planning-form { gap: var(--space-3); }
+.planning-form p { margin: 0; }
+.ui-dialog:has(.planning-form) .dialog-actions { position: sticky; bottom: 0; background: var(--color-surface); }
+.planning-upcoming { list-style: none; padding: 0; }
+.planning-upcoming li { display: grid; gap: var(--space-1); padding-block: var(--space-3); border-bottom: 1px solid var(--color-border); }
+@media (max-width:1200px) { .planning-layout { grid-template-columns: minmax(0,1fr); } .planning-available .form-stack { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); } .planning-filters { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+@media (min-width:1600px) { .planning-layout { grid-template-columns: minmax(0,1fr) 310px; } .planning-grid .planning-day { min-height: 120px; } }
+@media (max-width:700px) { .planning-filters,.planning-available .form-stack { grid-template-columns: minmax(0,1fr); } .planning-grid .planning-day { min-height: 85px; } .planning-chip strong { display: none; } .planning-chip { font-size: 10px; } }

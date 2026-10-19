@@ -11,6 +11,6 @@ export const selectMedia = (format: PublicationFormat) => invoke<ImportResult>('
 export const discardMedia = (ids: string[]) => ids.length ? invoke<void>('media_discard', { ids }) : Promise.resolve();
 export const mediaUrl = (media: MediaAsset) => media.previewPath ? convertFileSrc(media.previewPath) : undefined;
 export function editorialError(error: unknown): string {
-  if (typeof error === 'object' && error !== null && 'code' in error && 'message' in error && ['VALIDATION','MEDIA_INVALID','MEDIA_IO','NOT_FOUND','EDIT_CONFLICT','REVIEW_INVALID'].includes(String(error.code)) && typeof error.message === 'string') return error.message;
+  if (typeof error === 'object' && error !== null && 'code' in error && 'message' in error && ['VALIDATION','MEDIA_INVALID','MEDIA_IO','NOT_FOUND','EDIT_CONFLICT','REVIEW_INVALID','CALENDAR_INVALID'].includes(String(error.code)) && typeof error.message === 'string') return error.message;
   return describeDesktopError(error);
 }

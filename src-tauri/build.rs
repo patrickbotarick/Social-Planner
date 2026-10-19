@@ -1,6 +1,13 @@
 fn main() {
     tauri_build::try_build(tauri_build::Attributes::new().app_manifest(
         tauri_build::AppManifest::new().commands(&[
+            "calendar_list",
+            "calendar_available",
+            "schedule_save",
+            "schedule_cancel",
+            "schedule_settings_save",
+            "planning_dashboard",
+            "schedule_history",
             "review_list",
             "review_get",
             "review_decide",

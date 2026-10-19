@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-planning-dashboard"
+description = "Enables the planning_dashboard command without any pre-configured scope."
+commands.allow = ["planning_dashboard"]
+
+[[permission]]
+identifier = "deny-planning-dashboard"
+description = "Denies the planning_dashboard command without any pre-configured scope."
+commands.deny = ["planning_dashboard"]

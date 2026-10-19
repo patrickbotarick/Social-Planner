@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-schedule-cancel"
+description = "Enables the schedule_cancel command without any pre-configured scope."
+commands.allow = ["schedule_cancel"]
+
+[[permission]]
+identifier = "deny-schedule-cancel"
+description = "Denies the schedule_cancel command without any pre-configured scope."
+commands.deny = ["schedule_cancel"]

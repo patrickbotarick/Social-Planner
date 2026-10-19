@@ -73,7 +73,7 @@ function Application() {
       case 'biblioteca': return <Library />;
       case 'importacoes': return <Imports onGuard={onGuard} />;
       case 'revisao': return <Review onGuard={onGuard} />;
-      case 'calendario': return <Calendar timezone={state.kind === 'ready' ? state.data.settings.timezone : 'America/Sao_Paulo'} />;
+      case 'calendario': return <Calendar timezone={state.kind === 'ready' ? state.data.settings.timezone : 'America/Sao_Paulo'} onGuard={onGuard} />;
       case 'nova-publicacao': return <NewPublication key={route} onGuard={onGuard} onCancel={() => { attempt(() => { window.location.hash = '#/biblioteca'; }); }} onSaved={publication => { window.location.hash = '#/biblioteca/'+publication.id; }} />;
       case 'historico': return <History />;
       case 'configuracoes': return <Settings state={state} onRefresh={refresh} />;

@@ -9,6 +9,18 @@ import assert from 'node:assert/strict';
 const sql = readFileSync(new URL('../src-tauri/migrations/001_foundation.sql', import.meta.url), 'utf8');
 const editorialSql = readFileSync(new URL('../src-tauri/migrations/002_editorial_library.sql', import.meta.url), 'utf8');
 
+test('calendário migra banco existente, exige aprovação, evita duplicação e invalida por versão com auditoria atômica', () => {
+  const db=new DatabaseSync(':memory:');db.exec('PRAGMA foreign_keys=ON');db.exec(sql);db.exec(editorialSql);
+  for(const name of ['003_trello_import','004_editorial_review']) db.exec(readFileSync(new URL(`../src-tauri/migrations/${name}.sql`,import.meta.url),'utf8'));
+  db.prepare('INSERT INTO publications(id,title,caption,search_text,format,editorial_status) VALUES(?,?,?,?,?,?)').run('original','Preservar','😊\n#GMAD','preservar','feed','approved');
+  const before=db.prepare('SELECT * FROM publications').get();db.exec(readFileSync(new URL('../src-tauri/migrations/005_local_calendar.sql',import.meta.url),'utf8'));assert.deepEqual(db.prepare('SELECT * FROM publications').get(),before);
+  const insert=db.prepare("INSERT INTO schedules(id,publication_id,publication_version,scheduled_date,scheduled_time,timezone,scheduled_at_utc,status) VALUES(?,'original',1,'2099-11-03','23:30','America/Sao_Paulo','2099-11-04T02:30:00Z','planned_local')");
+  insert.run('planned');assert.throws(()=>insert.run('duplicate'));assert.equal(db.prepare('SELECT count(*) n FROM schedule_events').get().n,1);
+  db.exec('UPDATE publications SET version=version+1');assert.equal(db.prepare('SELECT status FROM schedules').get().status,'invalidated_local');assert.equal(db.prepare('SELECT count(*) n FROM schedule_events').get().n,2);
+  assert.throws(()=>db.exec('DELETE FROM schedules'));assert.throws(()=>db.exec('DELETE FROM schedule_events'));assert.throws(()=>db.exec("UPDATE schedule_events SET timezone='UTC'"));
+  assert.equal(db.prepare('PRAGMA quick_check').get().quick_check,'ok');assert.deepEqual(db.prepare('PRAGMA foreign_key_check').all(),[]);db.close();
+});
+
 test('migração de revisão preserva dados anteriores e protege histórico imutável por versão', () => {
   const db = new DatabaseSync(':memory:');
   db.exec('PRAGMA foreign_keys=ON');db.exec(sql);db.exec(editorialSql);

@@ -43,7 +43,7 @@ publication_id FK com ON DELETE CASCADE; media_asset_id FK com ON DELETE RESTRIC
 
 ## Evolução planejada — sem antecipar migrações futuras
 
-Publication, MediaAsset, PublicationMedia, AppSettings, TrelloBoard e ImportedCard já existem. EditorialReview foi implementado na migração 004. Schedule e PublicationEvent continuam futuros. A tabela e o diagrama representam o modelo completo planejado; variantes de um mesmo cartão exigirão evolução explícita do vínculo inicial 1:1 implementado.
+Publication, MediaAsset, PublicationMedia, AppSettings, TrelloBoard e ImportedCard já existem. EditorialReview foi implementado na migração 004; Schedule, ScheduleEvent e preferências de planejamento na 005. PublicationEvent externo continua futuro. A tabela e o diagrama representam o modelo completo planejado; variantes de um mesmo cartão exigirão evolução explícita do vínculo inicial 1:1 implementado.
 
 | Entidade | Identidade e relações | Dados principais / proteção |
 | --- | --- | --- |
@@ -53,7 +53,8 @@ Publication, MediaAsset, PublicationMedia, AppSettings, TrelloBoard e ImportedCa
 | Publication | UUID; vínculo inicial via imported_cards.publication_id UNIQUE | Conteúdo editável e versão; publicação manual não exige origem |
 | PublicationMedia | Associação já implementada | Preservar UNIQUE do par e UNIQUE(publication_id, sort_order); ordenação não negativa |
 | EditorialReview | UUID, publication_id FK | Decisão imutável, versão revisada, motivo e transição |
-| Schedule | UUID, publication_id FK | Conteúdo/versionamento, horário UTC, fuso IANA, modo, estado e prova externa; só um ativo por publicação |
+| Schedule | UUID, publication_id FK | Versão aprovada, data/hora local, UTC, fuso IANA, estado local e versão otimista; só um ativo por publicação. Prova externa não implementada |
+| ScheduleEvent | INTEGER PK, schedule_id FK | Evento local imutável, instantes anteriores/novos e versões |
 | PublicationEvent | UUID, publication_id FK, schedule_id opcional | Evento e evidência imutáveis, deduplicação externa, código de erro redigido |
 | AppSettings | Singleton já implementado | Acrescentar preferências por migração; nunca segredos |
 
@@ -81,7 +82,7 @@ Edição incrementa versão e invalida prontidão. Um Schedule referencia a vers
 
 Identificar cartões e anexos por IDs externos; títulos não são chaves. Upsert transacional atualiza apenas snapshots da origem. Mudanças sinalizam revisão sem sobrescrever legenda/mídias organizadas pelo usuário. Downloads usam arquivo temporário, limites e conclusão atômica antes do estado disponível. Não excluir publicação porque o cartão desapareceu da origem.
 
-Índices, foreign keys e retenção editorial estão implementados nas migrações 002–004. Revisão está implementada na Fase 05; agendamento e evidências externas continuam planejados para as fases próprias.
+Índices, foreign keys e retenção editorial estão implementados nas migrações 002–005. Revisão está implementada na Fase 05 e planejamento local na Fase 06; agendamento e evidências externas continuam planejados para as fases próprias.
 
 ## Origem Trello — migração 003
 
@@ -103,3 +104,13 @@ A data do quadro avança ao concluir a seleção confirmada sem falhas; não imp
 `editorial_reviews`: id UUID PK; publication_id FK RESTRICT; event approved/ignored/returned/submitted/edited; previous_status e next_status no enum editorial existente; reviewed_version > 0; resulting_version = reviewed_version + 1; reason opcional product/campaign/irrelevant/duplicate/other; note opcional até 2.000 caracteres; created_at UTC. Motivo/observação só são aceitos em ignored. Índices por publicação/data e eventos recentes; triggers impedem UPDATE e DELETE. Exclusão lógica da publicação conserva o histórico.
 
 Decisão e edição usam versão esperada, incrementam a versão e gravam evento na mesma transação. Lotes são independentes por item, preservando resultados parciais. Auditoria não guarda texto editorial completo ou credenciais. A reimportação Trello preserva estado, versão e eventos editoriais. Regras e testes em [Fase 05](FASE_05_REVISAO_EDITORIAL.md).
+
+## Planejamento local — migração 005
+
+`schedules`: id UUID PK; publication_id FK RESTRICT; publication_version > 0; scheduled_date canônica YYYY-MM-DD; scheduled_time HH:mm; timezone IANA; scheduled_at_utc ISO UTC; status planned_local/cancelled_local/invalidated_local; version > 0; created_at/updated_at UTC; cancelled_at presente exclusivamente em cancelled_local. Índice único parcial de publication_id quando planned_local e índice por instante/estado. Proibido DELETE; registros encerrados não são reativados. Novo planejamento cria outro ID.
+
+`schedule_settings`: singleton id=1; proximity_minutes 0–180, padrão 30; time_step_minutes 5/10/15/30/60, padrão 30; versão otimista. `schedule_events`: id INTEGER PK; schedule_id FK RESTRICT; event created_local/rescheduled_local/cancelled_local/invalidated_local; previous_date/time/timezone/utc opcionais; novos data/hora/fuso/UTC; schedule_version, publication_version e created_at UTC. Índice de eventos recentes. UPDATE/DELETE proibidos por triggers.
+
+INSERT exige publicação ativa aprovada na versão exata; UPDATE exige estado anterior ativo, mesma publicação/versão aprovada e versão de planejamento incrementada. Ao permanecer ativo, a aprovação atual é reconferida. Auditoria é automática na transação. Trigger em alteração de versão/estado/exclusão lógica de publicação invalida todos os seus planos ativos e audita atomicamente. Arquivos e relações PublicationMedia não são alterados. Mudar snapshot Trello sem mudar conteúdo/estado/versão editorial conserva planos.
+
+Rust valida calendário, fuso/DST, futuro, composição e integridade de arquivos; somente aprovadas são elegíveis. Datas de cartões nunca criam planos. Estados externos definidos conceitualmente acima não estão no enum persistido; nenhuma submissão ou publicação Meta é representada como executada. Regras e testes em [Fase 06](FASE_06_CALENDARIO_EDITORIAL.md).

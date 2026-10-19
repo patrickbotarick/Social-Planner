@@ -4,9 +4,10 @@ import { desktopAvailable } from '../services/desktop';
 import { useEditorialQuery } from '../hooks/useEditorialQuery';
 import { PageHeader } from '../components/PageHeader';
 import { Button } from '../components/ui/Button';
-import { Card, EmptyState } from '../components/ui/Presentation';
+import { Card } from '../components/ui/Presentation';
 import { StorageStatus } from '../components/StorageStatus';
 import type { FoundationState } from '../types/foundation';
+import { PlanningSummary } from '../features/editorial/PlanningSummary';
 
 export function Dashboard({ state, onRefresh }: { state: FoundationState; onRefresh: () => Promise<void> }) {
   const counts = useEditorialQuery(getEditorialCounts);
@@ -19,10 +20,7 @@ export function Dashboard({ state, onRefresh }: { state: FoundationState; onRefr
     </Card>
     <div className="dashboard-columns">
       <div className="dashboard-main">
-        <Card aria-labelledby="upcoming-title"><div className="card-heading"><h2 id="upcoming-title">Próximas publicações</h2><a href="#/calendario" className="small">Abrir calendário</a></div>
-          <div className="list-columns" aria-hidden="true"><span>Data</span><span>Publicação</span><span>Estado</span></div>
-          <EmptyState icon="calendario" title="Seu planejamento começa aqui" description="As publicações planejadas aparecerão nesta lista quando o calendário editorial estiver disponível." />
-        </Card>
+        <PlanningSummary timezone={state.kind==='ready'?state.data.settings.timezone:'America/Sao_Paulo'}/>
       </div>
       <div className="dashboard-aside"><Card aria-labelledby="shortcuts-title"><div className="card-heading"><h2 id="shortcuts-title">Seu fluxo de trabalho</h2></div>
         {[

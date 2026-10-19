@@ -57,6 +57,27 @@ fn resync_preserves_approved_and_ignored_decisions_local_edits_and_audit() {
                 .success
         );
         let before = r.get(&id).unwrap();
+        if status == "approved" {
+            r.schedule_save(crate::calendar::ScheduleInput {
+                id: None,
+                expected_version: None,
+                publication_id: id.clone(),
+                publication_version: before.version,
+                scheduled_date: "2099-11-03".into(),
+                scheduled_time: "10:00".into(),
+                timezone: "America/Sao_Paulo".into(),
+            })
+            .unwrap();
+        }
+        let planning_before: Vec<(String, String, u32)> = r
+            .database
+            .connection
+            .prepare("SELECT id,status,version FROM schedules ORDER BY id")
+            .unwrap()
+            .query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))
+            .unwrap()
+            .collect::<Result<_, _>>()
+            .unwrap();
         c.desc = "Nova descrição remota".into();
         let p = preview(&r, vec![c]);
         let job = run(&mut r, &p, &mut Mock::new(vec![]), &AtomicBool::new(false));
@@ -68,6 +89,16 @@ fn resync_preserves_approved_and_ignored_decisions_local_edits_and_audit() {
         assert_eq!(after.caption, before.caption);
         assert_eq!(after.title, before.title);
         assert_eq!(after.media[0].id, before.media[0].id);
+        let planning_after: Vec<(String, String, u32)> = r
+            .database
+            .connection
+            .prepare("SELECT id,status,version FROM schedules ORDER BY id")
+            .unwrap()
+            .query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))
+            .unwrap()
+            .collect::<Result<_, _>>()
+            .unwrap();
+        assert_eq!(planning_before, planning_after);
         let origin = r.trello_source(&id).unwrap().unwrap();
         assert!(origin.source_changed);
         assert_eq!(origin.original_description, "Nova descrição remota");
@@ -959,7 +990,7 @@ fn prepare_native_qa_fixture() {
     let j = run(&mut r, &p, &mut t, &AtomicBool::new(false));
     assert_eq!(j.status, "completed");
     assert_eq!(r.counts().unwrap().pending_review, 3);
-    assert_eq!(r.database.status().unwrap().schema_version, 3);
+    assert_eq!(r.database.status().unwrap().schema_version, 5);
 }
 #[test]
 #[ignore = "teste Windows opt-in, usa e remove somente entrada exclusiva de QA"]

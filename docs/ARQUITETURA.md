@@ -93,7 +93,7 @@ TrelloState serializa operações, mantém a prévia em memória por 15 minutos,
 
 A migração 003 é aditiva e mantém 001/002 intactas. Snapshot remoto e Publication são independentes; reimportação nunca sobrescreve composição/estado/versão editorial. Arquivos completos promovidos são conservados em falhas posteriores; temporários conhecidos são removidos. Jobs interrompidos são identificados ao abrir o aplicativo. Não existe limpeza destrutiva de arquivos órfãos.
 
-Configurações → Trello usa autorização pessoal oficial somente leitura e cofre nativo; Importações oferece prévia, confirmação, limites, progresso, cancelamento e histórico. Detalhes/editor mostram origem e anexos; anexos novos entram na composição somente por ação explícita. O cadastro manual permanece independente. Aprovação/revisão foram implementadas na Fase 05; calendário persistente permanece futuro.
+Configurações → Trello usa autorização pessoal oficial somente leitura e cofre nativo; Importações oferece prévia, confirmação, limites, progresso, cancelamento e histórico. Detalhes/editor mostram origem e anexos; anexos novos entram na composição somente por ação explícita. O cadastro manual permanece independente. Aprovação/revisão foram implementadas na Fase 05; calendário persistente na Fase 06.
 
 Contratos, fontes oficiais e limitações: [Integração Trello](INTEGRACAO_TRELLO.md). Evidências e distinção entre mocks e serviço real: [Fase 04](FASE_04_INTEGRACAO_TRELLO.md).
 
@@ -102,3 +102,13 @@ Contratos, fontes oficiais e limitações: [Integração Trello](INTEGRACAO_TREL
 `review.rs` amplia o repositório existente com fila, análise, decisões e histórico; quatro comandos específicos (`review_list`, `review_get`, `review_decide`, `review_history`) usam o worker bloqueante e o mutex editorial existente. SQL parametrizado e DTOs restritos mantêm o frontend sem acesso genérico ao banco/arquivos. Migração 004 adiciona eventos imutáveis; atualização otimista e auditoria são atômicas por publicação. Lotes retornam um resultado por alvo, sem transação global que descarte os sucessos.
 
 Review, ReviewIndividual e ReviewHistory compõem os controles existentes; PublicationEditor e MediaPreview são reutilizados. Guarda de navegação/fechamento compartilha salvar/descartar/permanecer, sem salvar implicitamente. Filas mantêm IDs ordenados da seleção aberta, filtros/página e navegação segura fora de campos. Inspeção completa verifica hashes e conteúdo no worker Rust; a listagem usa caminho/tamanho. Vídeos usam controles WebView2, com falha de reprodução distinta de download. Limites e evidências em [Fase 05](FASE_05_REVISAO_EDITORIAL.md).
+
+## Calendário editorial da Fase 06
+
+`calendar.rs` amplia o mesmo repositório com os comandos específicos `calendar_list`, `calendar_available`, `schedule_save`, `schedule_cancel`, `schedule_settings_save`, `planning_dashboard` e `schedule_history`. DTOs restritos, worker bloqueante, mutex existente e SQL parametrizado. React organiza calendário/fila/formulários; serviços/tipos separam IPC; PlanningSummary e PlanningHistory reutilizam apresentação editorial e MediaPreview. Nenhum acesso genérico novo ao disco/banco e nenhuma integração Meta.
+
+Migração 005 cria schedules, schedule_settings e schedule_events imutáveis. Gravações usam transação imediata, versão esperada, índice único parcial e triggers de aprovação/auditoria. Mudança editorial invalida planos ativos na mesma transação, incluindo comandos existentes de edição, revisão e exclusão lógica. Reimportação de snapshot preserva planos. Cancelar mantém registros e mídia compartilhada.
+
+Data/hora/fuso IANA explícitos são convertidos por Chrono/chrono-tz no Rust, rejeitando ambiguidades e lacunas DST; persistem também UTC. Conflitos são calculados no backend sobre instantes, inclusive fora dos filtros, com proximidade configurável. Listagem mensal é limitada a 10.000 registros; fila/histórico paginados. Validação completa reutiliza review_item; consultas usam inspeção leve e avisos. Sem scheduler, tarefas remotas ou estados de confirmação externa.
+
+Arraste interno usa Pointer Events com captura e validação de IDs/destino, com alternativa HTML5; sempre abre confirmação, sem gravar no drop. `dragDropEnabled: false` na janela evita interceptação de arquivos pelo Tauri e permite HTML5 no Windows; não habilita importação arbitrária de arquivos. A alternativa por botões e formulário continua integral. Evidências nativas, dependências e limites em [Fase 06](FASE_06_CALENDARIO_EDITORIAL.md).

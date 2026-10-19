@@ -6,6 +6,13 @@
     "main"
   ],
   "permissions": [
+    "allow-calendar-list",
+    "allow-calendar-available",
+    "allow-schedule-save",
+    "allow-schedule-cancel",
+    "allow-schedule-settings-save",
+    "allow-planning-dashboard",
+    "allow-schedule-history",
     "allow-review-list",
     "allow-review-get",
     "allow-review-decide",

@@ -2,7 +2,7 @@
 
 Aplicativo Windows local-first para organizar o conteúdo editorial de Instagram da GMAD Rio Preto, recebido mensalmente do Trello da matriz.
 
-**Estado:** Fases 01–04 validadas, incluindo [homologação Trello real](docs/FASE_04_5_HOMOLOGACAO_TRELLO.md). A [Fase 05](docs/FASE_05_REVISAO_EDITORIAL.md) implementa fila de revisão, decisões reversíveis individuais/em lote, edição protegida e histórico por versão; validada no Tauri Windows em perfil isolado, com 128 testes locais aprovados. Calendário persistente e Meta continuam nas fases 06–09. Nenhuma publicação externa é executada.
+**Estado:** Fases 01–05 validadas, incluindo [homologação Trello real](docs/FASE_04_5_HOMOLOGACAO_TRELLO.md) e [revisão editorial](docs/FASE_05_REVISAO_EDITORIAL.md). A [Fase 06](docs/FASE_06_CALENDARIO_EDITORIAL.md) implementa calendário persistente, reagendamento, conflitos e histórico local: 152 testes aprovados, builds e persistência no Tauri Windows. Cancelamento nativo e persistência homologados no QA, preservando publicações e mídias; aceite técnico concluído. Meta continua nas fases 07–09. Nenhuma publicação externa é executada.
 
 ## Pré-requisitos
 
@@ -131,8 +131,14 @@ Diretrizes visuais e contratos dos componentes em [Design system](docs/DESIGN_SY
 - [Entrega e validação da Fase 04](docs/FASE_04_INTEGRACAO_TRELLO.md).
 - [Instruções persistentes para agentes](AGENTS.md).
 
-Não avançar automaticamente para a Fase 06. Não executar publicação externa sem autorização explícita. Git ignora dependências, builds, bancos operacionais, mídias e segredos; não há push automático.
+Não avançar automaticamente para a Fase 07. Não executar publicação externa sem autorização explícita. Git ignora dependências, builds, bancos operacionais, mídias e segredos; push exige autorização (fornecida especificamente para a entrega da Fase 06 após validação e auditoria).
 
 ## Revisão editorial
 
 Abra Revisão, filtre a fila e entre em uma publicação. Confira mídia/legenda, edite se necessário e escolha Aprovar ou Ignorar; motivo e observação são opcionais. Aprovadas/ignoradas podem retornar à revisão. Editar uma decisão já tomada exige nova revisão ao salvar. Na listagem, selecione itens e confirme a ação em lote; erros são informados por item. Consulte Histórico para transições e versões. Setas navegam fora dos campos; Escape fecha diálogos. O aplicativo oferece salvar, descartar ou permanecer ao sair com alterações. Aprovação é exclusivamente editorial, sem agendar/publicar.
+
+## Calendário editorial local
+
+Abra Calendário, escolha um dia e use Agendar em uma publicação aprovada disponível. Informe data, hora e fuso IANA e confirme. Também é possível arrastar da fila ou mover um item entre dias; o arraste abre o formulário antes de gravar. Use os detalhes do dia ou a visualização Lista para alterar data/horário ou remover do planejamento, preservando publicação e mídias. Filtros ficam recolhidos para aproveitar o espaço; Horários e proximidade configura sugestões e alertas. O Dashboard mostra os próximos planos; Histórico → Planejamento local registra as alterações.
+
+Editar uma publicação aprovada invalida seu plano na mesma transação; revise, aprove e planeje novamente explicitamente. Conflitos são avisos locais. Computador desligado não executa qualquer publicação. Detalhes, testes e limites em [Fase 06](docs/FASE_06_CALENDARIO_EDITORIAL.md).

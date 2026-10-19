@@ -18,6 +18,10 @@ mod review;
 #[cfg(test)]
 mod review_tests;
 use review::*;
+mod calendar;
+use calendar::*;
+#[cfg(test)]
+mod calendar_tests;
 
 use database::FoundationStatus;
 use editorial_domain::*;
@@ -28,6 +32,51 @@ use tauri::Manager;
 use tauri_plugin_dialog::DialogExt;
 
 struct DatabaseState(Mutex<Result<EditorialRepository, AppError>>);
+
+#[tauri::command]
+async fn calendar_list(
+    app: tauri::AppHandle,
+    query: CalendarQuery,
+) -> Result<CalendarPage, AppError> {
+    with_repository(app, move |r| r.calendar_list(query)).await
+}
+#[tauri::command]
+async fn calendar_available(
+    app: tauri::AppHandle,
+    query: AvailableQuery,
+) -> Result<AvailablePage, AppError> {
+    with_repository(app, move |r| r.calendar_available(query)).await
+}
+#[tauri::command]
+async fn schedule_save(app: tauri::AppHandle, input: ScheduleInput) -> Result<String, AppError> {
+    with_repository(app, move |r| r.schedule_save(input)).await
+}
+#[tauri::command]
+async fn schedule_cancel(
+    app: tauri::AppHandle,
+    id: String,
+    expected_version: u32,
+) -> Result<(), AppError> {
+    with_repository(app, move |r| r.schedule_cancel(&id, expected_version)).await
+}
+#[tauri::command]
+async fn schedule_settings_save(
+    app: tauri::AppHandle,
+    input: SettingsInput,
+) -> Result<(), AppError> {
+    with_repository(app, move |r| r.schedule_settings_save(input)).await
+}
+#[tauri::command]
+async fn planning_dashboard(
+    app: tauri::AppHandle,
+    timezone: String,
+) -> Result<PlanningDashboard, AppError> {
+    with_repository(app, move |r| r.planning_dashboard(&timezone)).await
+}
+#[tauri::command]
+async fn schedule_history(app: tauri::AppHandle, offset: u32) -> Result<PlanningHistory, AppError> {
+    with_repository(app, move |r| r.schedule_history(offset)).await
+}
 
 #[tauri::command]
 async fn review_list(app: tauri::AppHandle, query: ReviewQuery) -> Result<ReviewPage, AppError> {
@@ -217,6 +266,13 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            calendar_list,
+            calendar_available,
+            schedule_save,
+            schedule_cancel,
+            schedule_settings_save,
+            planning_dashboard,
+            schedule_history,
             review_list,
             review_get,
             review_decide,

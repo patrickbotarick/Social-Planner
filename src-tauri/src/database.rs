@@ -4,6 +4,7 @@ use serde::Serialize;
 use std::{path::Path, time::Duration};
 
 const MIGRATIONS: &[(i64, &str, &str)] = &[
+    // Apenas adições: nunca reescrever migrações já aplicadas.
     // Migrações anteriores permanecem byte a byte no histórico.
     (
         1,
@@ -24,6 +25,11 @@ const MIGRATIONS: &[(i64, &str, &str)] = &[
         4,
         "editorial_review",
         include_str!("../migrations/004_editorial_review.sql"),
+    ),
+    (
+        5,
+        "local_calendar",
+        include_str!("../migrations/005_local_calendar.sql"),
     ),
 ];
 
@@ -194,7 +200,7 @@ mod tests {
                 .unwrap();
             assert_eq!(&applied, sql);
         }
-        assert_eq!(repository.status().unwrap().schema_version, 4);
+        assert_eq!(repository.status().unwrap().schema_version, 5);
     }
 
     #[test]
@@ -215,7 +221,7 @@ mod tests {
                 .unwrap();
         }
         let repository = Repository::open(&path).unwrap();
-        assert_eq!(repository.status().unwrap().schema_version, 4);
+        assert_eq!(repository.status().unwrap().schema_version, 5);
         assert_eq!(repository.settings().unwrap().timezone, "UTC");
         assert_eq!(repository.settings().unwrap().created_at, created);
         assert_eq!(
@@ -245,7 +251,7 @@ mod tests {
         let path = directory.path().join("test.sqlite3");
         {
             let repository = Repository::open(&path).unwrap();
-            assert_eq!(repository.status().unwrap().schema_version, 4);
+            assert_eq!(repository.status().unwrap().schema_version, 5);
             assert_eq!(repository.settings().unwrap().timezone, "America/Sao_Paulo");
             // Exercita persistência sem expor edição de configurações no IPC desta fase.
             repository
@@ -264,7 +270,7 @@ mod tests {
                 row.get(0)
             })
             .unwrap();
-        assert_eq!(count, 4);
+        assert_eq!(count, 5);
     }
 
     #[test]
