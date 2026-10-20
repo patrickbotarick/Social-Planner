@@ -1,6 +1,6 @@
 # Roadmap oficial
 
-Fonte normativa: [Projeto mestre](PROJETO_MESTRE.md). Fases 01–06 validadas neste Windows. Fase 07 concluída como pesquisa; o usuário escolheu o caminho assistido ao solicitar a Fase 08. Fase 08 concluída tecnicamente com preparação/declaração manual locais; conta e agendamento reais Meta ainda não homologados. Fase 09 **não iniciada**. Evidências nos relatórios das fases.
+Fonte normativa: [Projeto mestre](PROJETO_MESTRE.md). Fases 01–08 entregues no escopo registrado. **09A entrega candidata** com backup/restauração e release QA validados. Instalação adiada pelo usuário; Windows limpo, reinício e conta/agendamento reais Meta ainda não homologados. Fase 09 sem aceite integral; 09B e release estável não iniciados. Evidências nos relatórios das fases.
 
 Validação complementar: [Fase 01.5 — Windows](FASE_01_5_VALIDACAO_WINDOWS.md). Em 13/10/2026, os pré-requisitos foram instalados com autorização e os testes, builds, janela nativa, navegação, IPC, SQLite e persistência após reabertura foram comprovados. A Fase 01.5 é uma etapa de aceite da fundação, sem alterar o roadmap de nove fases.
 
@@ -14,7 +14,7 @@ Validação complementar: [Fase 01.5 — Windows](FASE_01_5_VALIDACAO_WINDOWS.md
 | 06 — Calendário mensal | Planejamento local | Visão mensal, horário/fuso, replanejamento, conflitos | 05 | Distribuição mensal persistente com distinção explícita de intenção local | Concluída tecnicamente em 19/10/2026; 152 testes, builds, Tauri em três resoluções, arraste, cancelamento e persistência aprovados |
 | 07 — Pesquisa e integração Meta | Validar caminho oficial | Pesquisa documentada, autorização, permissões, prova técnica ou fluxo assistido | 06, ativos profissionais e autorização externa | Evidência oficial do comportamento, limites e dependência do PC; decisão arquitetural registrada | Pesquisa concluída em 19/10/2026; caminho assistido escolhido pelo pedido da Fase 08. API não implementada; conta real não homologada |
 | 08 — Agendamento e acompanhamento | Executar o caminho assistido escolhido | Preparação local, transferência humana, declaração manual, reconciliação e histórico | 07 | Pacotes íntegros/versionados e declaração rastreável sem duplicidade; homologação real pode permanecer pendente operacional, conforme pedido desta fase | Concluída tecnicamente em 19/10/2026: 176 testes, builds e Tauri em QA isolado; agendamento real pendente para 09 |
-| 09 — Testes e distribuição | Entregar operação Windows confiável | Regressão completa, instalação/atualização, recuperação e backup, documentação de uso | 01–08 | Instalação em Windows limpo e recuperação de dados testadas; critérios de release atendidos | Não iniciada |
+| 09 — Testes e distribuição | Entregar operação Windows confiável | Regressão completa, instalação/atualização, recuperação e backup, documentação de uso | 01–08 | Instalação em Windows limpo e recuperação de dados testadas; critérios de release atendidos | 09A: candidata, 197 testes, backup/restauração e release QA validados. Instalação adiada pelo usuário; Windows limpo, reinício e Meta real pendentes. Sem aceite integral da fase |
 
 ## Portão entre fases
 
@@ -47,3 +47,11 @@ O pedido da Fase 08 escolheu explicitamente o caminho assistido. Migração 006,
 Tauri real validado em 1366×768 e Full HD, incluindo seletor de pasta, exportação individual/lote idempotente, Explorador, cópia/colagem, abertura do Business Suite e vídeo. QA simulou divergência 10h/11h, reconciliação local, pacote desatualizado, regeneração e revisão explícita. Reabertura confirmou cinco publicações/sete mídias/vínculos originais intactos, três pacotes atuais e um antigo preservado, uma declaração ativa e uma substituída, 15 eventos assistidos, SQLite íntegro e zero temporários pendentes. Banco operacional preservado.
 
 Aceite técnico do escopo assistido concluído. Homologação de um agendamento real na GMAD Rio Preto permanece pendência operacional para eventual Fase 09 solicitada separadamente, seguindo [Guia](GUIA_AGENDAMENTO_META.md). Não foi realizada pela automação. Evidências/limites em [Fase 08](FASE_08_AGENDAMENTO_ASSISTIDO.md). Fase 09 não iniciada; não há instalador/release v1.0.0.
+
+## Entrega da candidata 09A — 20/10/2026
+
+Backup pela SQLite Online Backup API, manifesto/hashes, inspeção, confirmação e restauração com recuperação verificada implementados sem nova migração ou crate. 96 frontend + 94 Rust + 7 SQL = 197 testes aprovados, cinco Rust opt-in ignorados. Typecheck, lint, Cargo check, Rustfmt, Clippy e builds frontend/release/NSIS aprovados. Vite exclui .tmp do observador após erro Windows 5 na troca do perfil; restauração nativa passou depois do reinício do ambiente.
+
+QA nativo: backup de cinco publicações/sete mídias; restauração autorizada, IDs/legendas/estados editoriais/vínculos/hashes íntegros, SQLite íntegro e reabertura aprovada. Preparações restauradas desatualizadas e declaração exige revisão. Release em identidade QA separada abriu sem terminal, exibiu biblioteca/imagem e persistiu após fechar/reabrir; layouts 1366×768 e Full HD conferidos. Dados operacionais preservados.
+
+Candidata 1.0.0-rc.1 e instalador NSIS x64 gerados, sem assinatura, hash nas notas. Usuário adiou instalação: atalhos/update/desinstalação foram apenas inspecionados no script, sem homologação empírica. Windows limpo, reinício do sistema e agendamento real Meta permanecem pendentes. Guias/changelog e auditoria entregues; commit/push normais autorizados pelo pedido desta etapa. Sem tag, release estável ou início de 09B. A Fase 09 não recebe aceite integral enquanto essas pendências permanecerem. Evidências em [Fase 09A](FASE_09A_AUDITORIA_RELEASE.md) e [candidata Windows](RELEASE_CANDIDATE_V1.md).

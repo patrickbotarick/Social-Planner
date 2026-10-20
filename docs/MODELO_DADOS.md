@@ -138,3 +138,11 @@ Triggers exigem aprovação/planejamento na versão exata ao iniciar/concluir pr
 `Reconciliar calendário` usa o contrato `schedule_save` existente com versões esperadas e horário/fuso efetivos do snapshot, sem atualizar a Meta. Isso invalida a preparação, exige regeneração e nova declaração. Referências opcionais são texto ou URLs HTTPS Meta estritamente validadas; não são credenciais nem destinos de rede.
 
 Manifesto exportado esquema 1 inclui IDs/versões, assinatura, formato, calendário/fuso/UTC, hash da legenda e mídia ordenada com nome seguro/asset_id/hash/bytes/MIME. Não inclui tokens ou URL de origem. Conteúdo completo continua no banco editorial e em legenda/mídias exportadas. O filesystem e SQLite têm recuperação em etapas, não transação única; detalhes em [Arquitetura](ARQUITETURA.md) e [Fase 08](FASE_08_AGENDAMENTO_ASSISTIDO.md).
+
+## Fase 09A — persistência e recuperação
+
+Não há migração 007: esquema permanece 6, com 001–006 intactas. O backup formato 1 contém manifesto JSON (kind, format, UUID, appVersion, schemaVersion, createdAt, files com caminho relativo/bytes/SHA-256), banco autossuficiente e pasta media. Preferências relevantes estão no próprio SQLite. Não inclui credenciais do cofre, cache ou exportações externas.
+
+A restauração confere modelo SQL/ledger exatos, integridade, foreign keys, mídia e hashes. Mantém IDs, versões, legenda, decisões editoriais, vínculos, planos e histórico do snapshot. No staging, altera apenas preparações preparing/prepared para outdated, declarações confirmed_manually para requires_review com incremento de versão e preferência root_id para NULL. Triggers existentes registram as transições; nenhum histórico é apagado. Caminhos de exportação históricos são conservados, mas exigem nova autorização de raiz antes de novas gerações.
+
+Ticket de inspeção vive somente em memória no Rust. Diário de troca e lock ficam ao lado do perfil, com nome derivado do hash do caminho; o diário aceita somente UUID, sem caminhos fornecidos pelo pacote. Ponto de recuperação e diretório anterior são preservados. Detalhes e limites no guia de backup e relatório da Fase 09A.

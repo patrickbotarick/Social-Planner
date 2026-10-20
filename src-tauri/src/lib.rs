@@ -22,6 +22,9 @@ mod calendar;
 use calendar::*;
 mod assisted;
 mod assisted_files;
+mod backup;
+#[cfg(test)]
+mod backup_tests;
 #[cfg(test)]
 mod calendar_tests;
 use assisted::*;
@@ -108,6 +111,106 @@ use tauri::Manager;
 use tauri_plugin_dialog::DialogExt;
 
 struct DatabaseState(Mutex<Result<EditorialRepository, AppError>>);
+struct ProfileLock(#[allow(dead_code)] std::fs::File);
+#[derive(Default)]
+struct BackupSelection(Mutex<Option<backup::Inspection>>);
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct BackupInspection {
+    ticket: String,
+    report: backup::BackupReport,
+}
+
+async fn backup_picker(
+    app: tauri::AppHandle,
+    title: &'static str,
+) -> Result<Option<std::path::PathBuf>, AppError> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let mut picker = app.dialog().file().set_title(title);
+        if let Some(parent) = app.get_webview_window("main") {
+            picker = picker.set_parent(&parent);
+        }
+        picker
+            .blocking_pick_folder()
+            .map(|f| f.into_path().map_err(|_| backup::invalid()))
+            .transpose()
+    })
+    .await
+    .map_err(|_| backup::io())?
+}
+#[tauri::command]
+async fn backup_create(app: tauri::AppHandle) -> Result<Option<backup::BackupReport>, AppError> {
+    let Some(path) = backup_picker(app.clone(), "Escolha o destino do novo backup GMAD").await?
+    else {
+        return Ok(None);
+    };
+
+    tauri::async_runtime::spawn_blocking(move || {
+        let trello = app.state::<TrelloState>();
+        let _operation = trello.enter()?;
+
+        let state = app.state::<DatabaseState>();
+        let lock = state.0.lock().map_err(|_| backup::busy())?;
+
+        backup::create(lock.as_ref().map_err(Clone::clone)?, &path).map(Some)
+    })
+    .await
+    .map_err(|_| backup::io())?
+}
+#[tauri::command]
+async fn backup_inspect(app: tauri::AppHandle) -> Result<Option<BackupInspection>, AppError> {
+    let Some(path) =
+        backup_picker(app.clone(), "Selecione a pasta GMAD-Backup a inspecionar").await?
+    else {
+        return Ok(None);
+    };
+    tauri::async_runtime::spawn_blocking(move || {
+        let report = backup::inspect(&path)?;
+        let ticket = uuid::Uuid::new_v4().to_string();
+        *app.state::<BackupSelection>()
+            .0
+            .lock()
+            .map_err(|_| backup::busy())? = Some(backup::Inspection {
+            path: std::path::PathBuf::from(&report.path),
+            fingerprint: report.manifest_sha256.clone(),
+            id: ticket.clone(),
+        });
+        Ok(Some(BackupInspection { ticket, report }))
+    })
+    .await
+    .map_err(|_| backup::io())?
+}
+#[tauri::command]
+async fn backup_restore(
+    app: tauri::AppHandle,
+    ticket: String,
+    confirmed: bool,
+) -> Result<backup::RestoreReport, AppError> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let trello = app.state::<TrelloState>();
+        let _operation = trello.enter()?;
+        let selection = app.state::<BackupSelection>();
+        let mut chosen = selection.0.lock().map_err(|_| backup::busy())?;
+        let selected = chosen
+            .as_ref()
+            .filter(|s| s.id == ticket)
+            .ok_or_else(backup::invalid)?;
+        let database = app.state::<DatabaseState>();
+        let mut lock = database.0.lock().map_err(|_| backup::busy())?;
+        let mut report = backup::restore(&mut lock, selected, confirmed)?;
+        if let Ok(r) = &*lock {
+            report.restart_required = app
+                .asset_protocol_scope()
+                .allow_directory(&r.storage.staging_directory, false)
+                .is_err();
+        }
+        trello.reset_after_restore();
+        *chosen = None;
+        Ok(report)
+    })
+    .await
+    .map_err(|_| backup::io())?
+}
 
 #[tauri::command]
 async fn calendar_list(
@@ -321,6 +424,17 @@ pub fn run() {
                         }
                     }
                 }
+                std::fs::create_dir_all(data_dir.parent().ok_or_else(AppError::file)?)
+                    .map_err(|_| AppError::database())?;
+                // Normaliza a identidade antes do lock/journal, inclusive quando o diretório estiver ausente.
+                data_dir = data_dir
+                    .parent()
+                    .ok_or_else(AppError::file)?
+                    .canonicalize()
+                    .map_err(|_| AppError::file())?
+                    .join(data_dir.file_name().ok_or_else(AppError::file)?);
+                app.manage(ProfileLock(backup::profile_lock(&data_dir)?));
+                backup::recover(&data_dir)?;
                 std::fs::create_dir_all(&data_dir).map_err(|_| AppError::database())?;
                 let repository = EditorialRepository::open(&data_dir)?;
                 repository.trello_recover()?;
@@ -339,9 +453,13 @@ pub fn run() {
             // A janela permanece disponível para mostrar o erro, sem resetar dados.
             app.manage(DatabaseState(Mutex::new(database)));
             app.manage(TrelloState::default());
+            app.manage(BackupSelection::default());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            backup_create,
+            backup_inspect,
+            backup_restore,
             assisted_list,
             assisted_prepare,
             assisted_confirm,

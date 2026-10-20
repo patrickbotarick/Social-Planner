@@ -78,7 +78,7 @@ function Application() {
       case 'assistido': return <Assisted timezone={state.kind === 'ready' ? state.data.settings.timezone : 'America/Sao_Paulo'} onGuard={onGuard} />;
       case 'nova-publicacao': return <NewPublication key={route} onGuard={onGuard} onCancel={() => { attempt(() => { window.location.hash = '#/biblioteca'; }); }} onSaved={publication => { window.location.hash = '#/biblioteca/'+publication.id; }} />;
       case 'historico': return <History />;
-      case 'configuracoes': return <Settings state={state} onRefresh={refresh} />;
+      case 'configuracoes': return <Settings state={state} onRefresh={refresh} onGuard={onGuard} />;
     }
   };
   return <div onClickCapture={intercept}><AppShell section={section} mainRef={main} state={state}>{content()}</AppShell><UnsavedDialog open={!!pending} busy={leaving} onSave={guard.current?.save ? () => { void saveAndLeave(); } : undefined} onDiscard={() => { void discardAndLeave(); }} onStay={() => { if (!leaving) setPending(null); }} /></div>;

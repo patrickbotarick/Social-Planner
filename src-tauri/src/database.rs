@@ -3,7 +3,7 @@ use rusqlite::{params, Connection, TransactionBehavior};
 use serde::Serialize;
 use std::{path::Path, time::Duration};
 
-const MIGRATIONS: &[(i64, &str, &str)] = &[
+pub(crate) const MIGRATIONS: &[(i64, &str, &str)] = &[
     // Apenas adições: nunca reescrever migrações já aplicadas.
     // Migrações anteriores permanecem byte a byte no histórico.
     (
@@ -114,7 +114,10 @@ fn check_integrity(connection: &Connection) -> Result<(), AppError> {
     Ok(())
 }
 
-fn migrate(connection: &mut Connection, migrations: &[(i64, &str, &str)]) -> Result<(), AppError> {
+pub(crate) fn migrate(
+    connection: &mut Connection,
+    migrations: &[(i64, &str, &str)],
+) -> Result<(), AppError> {
     let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
     let has_ledger: bool = transaction.query_row(
         "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations')",

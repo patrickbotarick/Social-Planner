@@ -1,6 +1,9 @@
 fn main() {
     tauri_build::try_build(tauri_build::Attributes::new().app_manifest(
         tauri_build::AppManifest::new().commands(&[
+            "backup_create",
+            "backup_inspect",
+            "backup_restore",
             "assisted_list",
             "assisted_prepare",
             "assisted_confirm",

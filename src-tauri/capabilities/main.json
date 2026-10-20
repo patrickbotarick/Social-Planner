@@ -6,6 +6,9 @@
     "main"
   ],
   "permissions": [
+    "allow-backup-create",
+    "allow-backup-inspect",
+    "allow-backup-restore",
     "allow-assisted-list",
     "allow-assisted-prepare",
     "allow-assisted-confirm",

@@ -1,9 +1,11 @@
 {
   "name": "gmad-social-planner",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0-rc.1",
   "type": "module",
-  "engines": { "node": ">=24.0.0 <25" },
+  "engines": {
+    "node": ">=24.0.0 <25"
+  },
   "scripts": {
     "dev": "node scripts/desktop-dev.mjs",
     "dev:web": "vite --host 127.0.0.1",
@@ -14,6 +16,7 @@
     "test:sql": "node --test tests/migrations.test.mjs",
     "build": "npm run typecheck && vite build",
     "build:desktop": "tauri build --no-bundle",
+    "build:installer": "tauri build --bundles nsis",
     "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml",
     "check:rust": "cargo fmt --manifest-path src-tauri/Cargo.toml --check && cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",
     "check": "npm run typecheck && npm run lint && npm test && npm run test:sql && npm run build",

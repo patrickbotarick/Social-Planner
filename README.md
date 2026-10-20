@@ -2,7 +2,9 @@
 
 Aplicativo Windows local-first para organizar o conteúdo editorial de Instagram da GMAD Rio Preto, recebido mensalmente do Trello da matriz.
 
-**Estado:** Fases 01–06 validadas e pesquisa Meta da Fase 07 concluída. A [Fase 08](docs/FASE_08_AGENDAMENTO_ASSISTIDO.md) implementa preparação individual/em lote, pacotes locais íntegros, declaração manual e reconciliação de horário, com Dashboard/histórico reais. 176 testes aprovados e builds frontend/desktop verificados. O agendamento é feito manualmente no Business Suite; o GMAD não envia nem publica conteúdo. Homologação de agendamento real na conta GMAD pendente para a Fase 09, que não foi iniciada.
+**Estado:** Fases 01–08 entregues no escopo registrado. A [Fase 09A](docs/FASE_09A_AUDITORIA_RELEASE.md) entrega a candidata `1.0.0-rc.1`, com backup/restauração e instalador NSIS. 197 testes aprovados; backup/restauração nativos e release em QA validados. Instalação adiada pelo usuário; Windows limpo, reinício, agendamento real GMAD e release estável continuam pendentes. O GMAD não envia nem publica conteúdo.
+
+Consulte o [guia do usuário](docs/GUIA_USUARIO_V1.md), [backup e restauração](docs/GUIA_BACKUP_RESTAURACAO.md), [candidata Windows](docs/RELEASE_CANDIDATE_V1.md) e [changelog](CHANGELOG.md). Os pré-requisitos de compilação abaixo são para desenvolvimento; o usuário do instalador não precisa de Rust, Node ou Codex.
 
 ## Pré-requisitos
 
@@ -61,6 +63,7 @@ Abra a URL exibida no terminal. A prévia informa que o SQLite só existe na jan
 | test:rust | Testes reais do repositório Rust e migrações |
 | check:rust | rustfmt e Clippy, sem warnings |
 | build:desktop | Compila executável desktop sem instalador |
+| build:installer | Gera instalador NSIS x64 candidato |
 | preview | Prévia do build frontend |
 | tauri -- info | Diagnóstico dos pré-requisitos Tauri |
 
@@ -140,7 +143,7 @@ Diretrizes visuais e contratos dos componentes em [Design system](docs/DESIGN_SY
 - [Entrega e validação da Fase 04](docs/FASE_04_INTEGRACAO_TRELLO.md).
 - [Instruções persistentes para agentes](AGENTS.md).
 
-Não avançar automaticamente para a Fase 08. Não executar publicação externa sem autorização explícita. Git ignora dependências, builds, bancos operacionais, mídias e segredos; push exige autorização (fornecida especificamente para as entregas das Fases 06 e 07 após validação e auditoria).
+Não avançar automaticamente para a Fase 09B nem criar release/tag v1.0.0. Não executar publicação externa sem autorização explícita. Git ignora dependências, builds, bancos operacionais, mídias, backups e segredos; o pedido da Fase 09A autoriza commit e push normal somente após validação e auditoria.
 
 ## Revisão editorial
 

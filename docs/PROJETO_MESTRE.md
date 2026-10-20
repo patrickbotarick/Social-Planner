@@ -10,7 +10,7 @@ O produto completo permitirá importar, revisar, editar, criar, aprovar, planeja
 
 ### Restrições permanentes
 
-Atualização de 19/10/2026: a Fase 07 encerrou a pesquisa e o pedido da Fase 08 escolheu assistência manual. A Fase 08 entrega preparação, pacotes versionados, declarações humanas, divergências e reconciliação local, com 176 testes e builds aprovados, QA nativo e persistência. Não implementa API de publicação; homologação real de agendamento na GMAD permanece pendente para eventual Fase 09, que não foi iniciada. Evidências em [Fase 08](FASE_08_AGENDAMENTO_ASSISTIDO.md).
+Atualização de 20/10/2026: a Fase 08 entrega preparação, pacotes versionados, declarações humanas e reconciliação local. A Fase 09A entrega backup/restauração e candidata Windows `1.0.0-rc.1`, com 197 testes aprovados e validação nativa de backup/restauração e release QA. Instalação adiada pelo usuário; Windows limpo, reinício, agendamento real GMAD e release estável permanecem pendentes. 09B não iniciada. Evidências em [Fase 08](FASE_08_AGENDAMENTO_ASSISTIDO.md) e [Fase 09A](FASE_09A_AUDITORIA_RELEASE.md).
 
 - Local-first, sem login interno, Supabase, Firebase, servidor próprio, banco em nuvem ou serviço pago obrigatório.
 - Funcionalidades locais operam offline. Somente integrações externas exigirão internet.
@@ -113,7 +113,7 @@ Prova documental registra versão, fontes, formatos, quotas inconsistentes, expi
 | 06 — Calendário mensal | Planejamento local com fuso e conflitos | 05 | Agendar/replanejar localmente sem alegar confirmação Meta | Concluída tecnicamente em 19/10/2026: 152 testes, builds, Tauri em três resoluções, arraste, cancelamento e persistência aprovados em QA isolado |
 | 07 — Pesquisa e integração Meta | Prova técnica oficial e decisão de viabilidade | 06; conta profissional e autorização externa | Evidências oficiais e estratégia validada, inclusive alternativa assistida | Pesquisa concluída; caminho assistido escolhido pelo pedido da Fase 08. API não implementada; conta real não homologada |
 | 08 — Agendamento e acompanhamento | Preparação e transferência assistidas, declaração manual e reconciliação local | 07 | Pacotes fiéis/versionados, idempotência, declaração explicitamente manual, divergência e histórico persistentes; conta real pode permanecer como pendência operacional | Implementada em 19/10/2026; 176 testes e builds aprovados. Evidências e aceite em FASE_08_AGENDAMENTO_ASSISTIDO.md; agendamento real pendente para 09 |
-| 09 — Testes e distribuição | Endurecimento, recuperação e distribuição Windows | 01–08 | Testes de ponta a ponta, instalação/atualização e recuperação validados | Não iniciada |
+| 09 — Testes e distribuição | Endurecimento, recuperação e distribuição Windows | 01–08 | Testes de ponta a ponta, instalação/atualização e recuperação validados | 09A entrega candidata com 197 testes e backup/restauração/release QA validados; instalação adiada, Windows limpo/reinício/Meta real pendentes. Sem aceite integral da Fase 09, 09B ou versão estável |
 
 Não iniciar outra fase sem solicitação. Detalhes de aceite e acompanhamento em ROADMAP.md.
 
@@ -125,12 +125,14 @@ Não iniciar outra fase sem solicitação. Detalhes de aceite e acompanhamento e
 - Tratamento explícito de carregamento, indisponibilidade do desktop e falhas de armazenamento.
 - Acessibilidade por teclado, contraste e responsividade. Sem fontes/CDNs remotos para funcionamento local.
 - Logs mínimos sem segredos; futura rotação e exportação de diagnóstico dependem de escopo próprio.
-- Backup futuro consistente via SQLite Backup API ou mecanismo equivalente validado, com banco, manifesto e mídias; não copiar somente o arquivo de um banco aberto em WAL. Restauração deve validar versão/integridade, manter cópia anterior e exigir decisão consciente. Backup ainda não implementado.
+- Backup implementado na 09A via SQLite Online Backup API, com banco autossuficiente, manifesto, hashes e mídias. Restauração valida formato/esquema/estrutura, exige confirmação, cria recuperação verificada e preserva o diretório anterior; diário protege a troca e startup. Esquema continua 6. Sem acesso ao cofre ou backup de credenciais. Backup/restauração nativos validados em QA; limites no guia e relatório da 09A.
 - Git com commits incrementais, lockfiles e exclusão de bancos, mídias operacionais, builds e segredos. Sem push automático.
 - Aceite da fase depende de evidência real; testes não executados nunca são considerados aprovados.
 
 ## 10. Documentos complementares
 
+- [Fase 09A](FASE_09A_AUDITORIA_RELEASE.md): auditoria, recuperação e distribuição candidata.
+- [Backup](GUIA_BACKUP_RESTAURACAO.md), [guia do usuário](GUIA_USUARIO_V1.md) e [candidata Windows](RELEASE_CANDIDATE_V1.md).
 - [Fase 08](FASE_08_AGENDAMENTO_ASSISTIDO.md): exportação, declarações, divergências, segurança, testes e validação Windows.
 - [Guia de agendamento Meta](GUIA_AGENDAMENTO_META.md): uso do fluxo e homologação operacional pendente.
 - [Fase 07](FASE_07_VIABILIDADE_META.md): fontes oficiais, capacidades e limites de viabilidade.

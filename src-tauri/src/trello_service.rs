@@ -35,14 +35,14 @@ impl Default for TrelloState {
         }
     }
 }
-struct Operation<'a>(&'a TrelloState);
+pub(crate) struct Operation<'a>(&'a TrelloState);
 impl Drop for Operation<'_> {
     fn drop(&mut self) {
         self.0.busy.store(false, Ordering::SeqCst);
     }
 }
 impl TrelloState {
-    fn enter(&self) -> Result<Operation<'_>, AppError> {
+    pub(crate) fn enter(&self) -> Result<Operation<'_>, AppError> {
         if self
             .busy
             .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
@@ -52,6 +52,14 @@ impl TrelloState {
         }
         self.cancel.store(false, Ordering::SeqCst);
         Ok(Operation(self))
+    }
+    pub(crate) fn reset_after_restore(&self) {
+        if let Ok(mut preview) = self.preview.lock() {
+            *preview = None;
+        }
+        if let Ok(mut progress) = self.progress.lock() {
+            *progress = None;
+        }
     }
     fn update(&self, j: &Job) {
         if let Ok(mut p) = self.progress.lock() {

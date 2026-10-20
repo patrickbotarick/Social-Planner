@@ -8,6 +8,7 @@ export const getFoundationStatus = (): Promise<FoundationStatus> =>
 export function describeDesktopError(error: unknown): string {
   if (typeof error === 'object' && error !== null && 'code' in error) {
     switch (error.code) {
+      case 'BACKUP_BUSY': return 'Este perfil já está em uso. Feche a outra instância e abra novamente; nenhum dado foi substituído.';
       case 'DATABASE_UNAVAILABLE': return 'Não foi possível abrir o banco local. Verifique o acesso ao diretório de dados e reinicie o aplicativo. Nenhum dado foi apagado.';
       case 'DATABASE_INTEGRITY': return 'A verificação do banco falhou. Preserve os arquivos e procure suporte antes de continuar.';
       case 'SCHEMA_UNSUPPORTED': return 'Este banco usa uma estrutura incompatível. Use a versão correspondente do aplicativo; não apague o banco.';
